@@ -1,0 +1,25 @@
+﻿namespace PosCorte.Domain.Entities
+{
+    public class OrdemServico
+    {
+        public int Id { get; set; }
+        public int ProjetoId { get; set; }
+        public string ExternalProviderId { get; set; }
+        public string StatusProvedor { get; set; }
+        public string MontadorNome { get; set; }
+        public string MontadorTelefone { get; set; }
+        public string MontadorFotoUrl { get; set; }
+        public DateTime DataAgendamento { get; set; }
+        public DateTime DataAtualizacao { get; set; }
+
+        public OrdemServico() { }
+
+        public OrdemServico(int projetoId, string externalProviderId)
+        {
+            ProjetoId = projetoId;
+            ExternalProviderId = externalProviderId;
+            StatusProvedor = "Pendente";
+            DataAtualizacao = DateTime.UtcNow;
+        }
+    }
+}
