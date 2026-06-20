@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  poscorte-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ProvedorApi__BaseUrl=https://api.provider.com
+    volumes:
+      - ./logs:/app/logs

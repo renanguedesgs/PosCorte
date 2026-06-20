@@ -1,0 +1,37 @@
+name: CI - Build & Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependências
+        run: dotnet restore PosCorte.slnx
+
+      - name: Build
+        run: dotnet build PosCorte.slnx --no-restore -c Release
+
+      - name: Testes
+        run: dotnet test src/PosCorte.Tests/PosCorte.Tests.csproj --no-build -c Release --logger "trx;LogFileName=test-results.trx"
+
+      - name: Publicar resultado dos testes
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Testes xUnit
+          path: '**/test-results.trx'
+          reporter: dotnet-trx

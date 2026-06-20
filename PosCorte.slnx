@@ -1,2 +1,7 @@
 <Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PosCorte.API/PosCorte.API.csproj" />
+    <Project Path="src/PosCorte.Domain/PosCorte.Domain.csproj" />
+    <Project Path="src/PosCorte.Tests/PosCorte.Tests.csproj" />
+  </Folder>
 </Solution>

@@ -1,0 +1,6 @@
+@PosCorte.API_HostAddress = http://localhost:5047
+
+GET {{PosCorte.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
