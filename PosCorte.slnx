@@ -3,5 +3,6 @@
     <Project Path="src/PosCorte.API/PosCorte.API.csproj" />
     <Project Path="src/PosCorte.Domain/PosCorte.Domain.csproj" />
     <Project Path="src/PosCorte.Tests/PosCorte.Tests.csproj" />
+    <Project Path="src/PosCorte.Web/PosCorte.Web.csproj" />
   </Folder>
 </Solution>

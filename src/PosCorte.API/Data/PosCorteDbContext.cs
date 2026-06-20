@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PosCorte.Domain.Entities;
 
 namespace PosCorte.API.Data
@@ -26,6 +27,9 @@ namespace PosCorte.API.Data
                 entity.Property(e => e.CpfCnpj).IsRequired().HasMaxLength(18);
                 entity.HasIndex(e => e.CpfCnpj).IsUnique();
                 entity.Property(e => e.Telefone).HasMaxLength(20);
+                entity.Property(e => e.SenhaHash).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Role).IsRequired().HasMaxLength(50).HasDefaultValue("Arquiteto");
+                entity.Property(e => e.Ativo).HasDefaultValue(true);
                 entity.Property(e => e.DataCadastro).HasDefaultValueSql("NOW()");
             });
 

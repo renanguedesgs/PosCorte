@@ -3,6 +3,9 @@ using PosCorte.API.Services;
 using PosCorte.API.Interfaces;
 using PosCorte.API.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +25,27 @@ builder.Host.UseSerilog();
 builder.Services.AddScoped<IPrecificacaoService, PrecificacaoService>();
 builder.Services.AddScoped<IPagamentoService, PagamentoService>();
 builder.Services.AddScoped<INotificacaoService, NotificacaoService>();
+
+// ===== AUTH SERVICE =====
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// ===== JWT AUTHENTICATION =====
+var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key não configurado");
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+    });
+builder.Services.AddAuthorization();
 
 // ===== BANCO DE DADOS - Supabase (PostgreSQL) =====
 builder.Services.AddDbContext<PosCorteDbContext>(options =>
@@ -91,6 +115,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
