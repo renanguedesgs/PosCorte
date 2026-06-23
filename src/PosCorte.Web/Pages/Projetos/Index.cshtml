@@ -1,0 +1,62 @@
+@page
+@model PosCorte.Web.Pages.Projetos.IndexModel
+@using PosCorte.Web.Services
+@{
+    ViewData["Title"] = "Projetos";
+}
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <span class="pc-eyebrow">Seus projetos</span>
+            <h1 class="h3 fw-bold mb-0 mt-1">Projetos</h1>
+        </div>
+        <a asp-page="/Projetos/Criar" class="btn btn-pc-primary"><i class="bi bi-plus-lg me-1"></i>Novo projeto</a>
+    </div>
+
+    @if (TempData["sucesso"] is string msg)
+    {
+        <div class="pc-alert pc-alert-success mb-3"><i class="bi bi-check-circle me-1"></i>@msg</div>
+    }
+
+    <div class="pc-card">
+        @if (!Model.Projetos.Any())
+        {
+            <div class="pc-empty">
+                <div class="icon"><i class="bi bi-folder2-open"></i></div>
+                <p class="mt-2 mb-3">Nenhum projeto cadastrado ainda.</p>
+                <a asp-page="/Projetos/Criar" class="btn btn-pc-primary btn-sm">Criar primeiro projeto</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="pc-table">
+                    <thead>
+                        <tr><th>#</th><th>Projeto</th><th>CEP da obra</th><th>Peças / Gavetas</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.Projetos)
+                        {
+                            var (css, label) = UiHelper.StatusProjeto(p.StatusProjeto);
+                            <tr>
+                                <td class="text-muted">@p.Id</td>
+                                <td class="fw-semibold">@p.NomeProjeto</td>
+                                <td class="text-muted">@(string.IsNullOrEmpty(p.CepObra) ? "—" : p.CepObra)</td>
+                                <td>@p.QtdPecas · @p.QtdGavetas</td>
+                                <td><span class="pc-status @css">@label</span></td>
+                                <td class="text-end">
+                                    @if (p.StatusProjeto == "Aguardando_Pagamento")
+                                    {
+                                        <a asp-page="/Projetos/Pagar" asp-route-id="@p.Id" class="btn btn-pc-primary btn-sm me-1"><i class="bi bi-qr-code me-1"></i>Pagar</a>
+                                    }
+                                    <a asp-page="/Projetos/Detalhes" asp-route-id="@p.Id" class="btn btn-pc-ghost btn-sm">Detalhes</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

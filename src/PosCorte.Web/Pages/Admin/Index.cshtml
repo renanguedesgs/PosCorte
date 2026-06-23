@@ -1,0 +1,109 @@
+@page
+@model PosCorte.Web.Pages.Admin.IndexModel
+@using PosCorte.Web.Services
+@{
+    ViewData["Title"] = "Painel Admin";
+    var d = Model.Dashboard;
+    var pt = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <span class="pc-eyebrow">Área do fundador</span>
+        <h1 class="h3 fw-bold mb-0 mt-1">Painel Administrativo</h1>
+        <p class="text-muted mb-0">Visão geral da operação PósCorte</p>
+    </div>
+
+    @if (d is null)
+    {
+        <div class="pc-alert pc-alert-danger">Não foi possível carregar os dados. Verifique se a API está no ar e se você está logado como Admin.</div>
+        return;
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="pc-tile"><div class="tile-num">@d.TotalArquitetos</div><div class="tile-lbl">Arquitetos</div></div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="pc-tile"><div class="tile-num">@d.TotalProjetos</div><div class="tile-lbl">Projetos</div></div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="pc-tile"><div class="tile-num">@d.TotalMarceneiros</div><div class="tile-lbl">Marceneiros na rede</div></div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="pc-tile"><div class="tile-num">@d.TotalOrdens</div><div class="tile-lbl">Ordens de serviço</div></div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="pc-card h-100">
+                <div class="pc-card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-cash-stack me-2 text-success"></i>Financeiro estimado</h5>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span>Volume transacionado</span>
+                        <strong>@d.VolumeTransacionadoEstimado.ToString("C", pt)</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span>Sua margem (20%)</span>
+                        <strong class="text-success">@d.ReceitaPlataformaEstimada.ToString("C", pt)</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-2">
+                        <span>Repasse aos marceneiros (80%)</span>
+                        <strong>@((d.VolumeTransacionadoEstimado - d.ReceitaPlataformaEstimada).ToString("C", pt))</strong>
+                    </div>
+                    <a asp-page="/Admin/Financeiro" class="btn btn-pc-ghost btn-sm mt-3">Como funciona o pagamento →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="pc-card h-100">
+                <div class="pc-card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-exclamation-triangle me-2 text-warning"></i>Status das integrações</h5>
+                    <div class="mb-2"><span class="text-muted">Gateway PIX:</span> <strong>@d.GatewayPagamento</strong></div>
+                    <div class="mb-2"><span class="text-muted">Escrow:</span> <strong>@d.StatusEscrow</strong></div>
+                    <div class="pc-alert pc-alert-danger mt-3 mb-0 small">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Hoje <strong>nenhum PIX real</strong> é cobrado. O pagamento está simulado. Próximo passo: integrar Asaas ou Iugu.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pc-card mb-4">
+        <div class="pc-card-body">
+            <h5 class="fw-bold mb-3">Projetos por status</h5>
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var kv in d.ProjetosPorStatus.OrderByDescending(x => x.Value))
+                {
+                    var (css, label) = UiHelper.StatusProjeto(kv.Key);
+                    <span class="pc-status @css">@label: @kv.Value</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="pc-card">
+        <div class="pc-card-body" style="padding-bottom:0"><h5 class="fw-bold mb-3">Projetos recentes</h5></div>
+        <div class="table-responsive">
+            <table class="pc-table">
+                <thead><tr><th>Projeto</th><th>Arquiteto</th><th>Valor</th><th>Sua margem</th><th>Montador</th><th>Status</th></tr></thead>
+                <tbody>
+                    @foreach (var p in d.ProjetosRecentes)
+                    {
+                        var (css, label) = UiHelper.StatusProjeto(p.StatusProjeto);
+                        <tr>
+                            <td class="fw-semibold">@p.NomeProjeto</td>
+                            <td>@p.ArquitetoNome</td>
+                            <td>@p.ValorEstimado.ToString("C", pt)</td>
+                            <td class="text-success">@p.MargemEstimada.ToString("C", pt)</td>
+                            <td>@(p.MontadorNome ?? "—")</td>
+                            <td><span class="pc-status @css">@label</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

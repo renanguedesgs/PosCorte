@@ -1,0 +1,96 @@
+@page
+@model PosCorte.Web.Pages.Projetos.CriarModel
+@{
+    ViewData["Title"] = "Novo projeto";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <a asp-page="/Projetos/Index" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Voltar para projetos</a>
+        <h1 class="h3 fw-bold mb-0 mt-2">Novo projeto</h1>
+        <p class="text-muted">Suba o plano de corte e veja o orçamento na hora.</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Erro))
+    {
+        <div class="pc-alert pc-alert-danger mb-3"><i class="bi bi-exclamation-circle me-1"></i>@Model.Erro</div>
+    }
+
+    <form method="post">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="pc-card">
+                    <div class="pc-card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nome do projeto</label>
+                            <input asp-for="NomeProjeto" class="form-control" placeholder="Cozinha Apto 142 - Cliente Silva" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">URL do arquivo de corte (Corte Cloud)</label>
+                            <input asp-for="UrlArquivoCorteCloud" class="form-control" placeholder="https://cortecloud.com/projeto/..." />
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Quantidade de peças</label>
+                                <input asp-for="QtdPecas" id="qtdPecas" type="number" min="0" class="form-control" value="0" />
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Quantidade de gavetas</label>
+                                <input asp-for="QtdGavetas" id="qtdGavetas" type="number" min="0" class="form-control" value="0" />
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">CEP da obra</label>
+                                <input asp-for="CepObra" class="form-control" placeholder="01310100" />
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">Endereço completo</label>
+                                <input asp-for="EnderecoCompleto" class="form-control" placeholder="Av. Paulista, 1000 - Bela Vista, São Paulo - SP" />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-pc-primary"><i class="bi bi-check-lg me-1"></i>Criar projeto</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="pc-orcamento">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="pc-eyebrow">Orçamento estimado</span>
+                        <i class="bi bi-lightning-charge-fill text-warning fs-5"></i>
+                    </div>
+                    <div class="valor" id="valorTotal">R$ 0,00</div>
+                    <p class="text-muted small mb-3">Preço final ao arquiteto (markup inverso 20%)</p>
+                    <div class="d-flex justify-content-between py-1 border-top">
+                        <span class="text-muted">Custo da mão de obra</span><span class="fw-semibold" id="custoPrestador">R$ 0,00</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-1 border-top">
+                        <span class="text-muted">Margem da plataforma</span><span class="fw-semibold text-success" id="margemLucro">R$ 0,00</span>
+                    </div>
+                    <div class="small text-muted mt-3">
+                        <i class="bi bi-info-circle me-1"></i>R$ 12,50 por peça · R$ 40,00 por gaveta
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        const fmt = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        function calcular() {
+            const pecas = parseInt(document.getElementById('qtdPecas').value) || 0;
+            const gavetas = parseInt(document.getElementById('qtdGavetas').value) || 0;
+            const custo = pecas * 12.5 + gavetas * 40;
+            const total = custo > 0 ? custo / 0.8 : 0;
+            document.getElementById('valorTotal').textContent = fmt(total);
+            document.getElementById('custoPrestador').textContent = fmt(custo);
+            document.getElementById('margemLucro').textContent = fmt(total - custo);
+        }
+        document.getElementById('qtdPecas').addEventListener('input', calcular);
+        document.getElementById('qtdGavetas').addEventListener('input', calcular);
+        calcular();
+    </script>
+}

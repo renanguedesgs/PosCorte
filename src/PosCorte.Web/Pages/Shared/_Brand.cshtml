@@ -1,0 +1,22 @@
+@{
+    var extraClass = ViewData["BrandExtraClass"] as string ?? "";
+    var footer = ViewData["BrandFooter"] as bool? ?? false;
+    var auth = ViewData["BrandAuth"] as bool? ?? false;
+    var asLink = ViewData["BrandLink"] as bool? ?? true;
+    var brandClass = $"pc-brand {extraClass}{(footer ? " pc-brand--footer" : "")}{(auth ? " pc-brand--auth" : "")}".Trim();
+}
+
+@if (asLink)
+{
+    <a class="@brandClass" asp-page="/Index">
+        <img src="~/images/poscorte-icon.png" alt="" class="pc-logo-img" asp-append-version="true" />
+        <span class="pc-brand-text">Pós<span class="accent">Corte</span></span>
+    </a>
+}
+else
+{
+    <div class="@brandClass">
+        <img src="~/images/poscorte-icon.png" alt="" class="pc-logo-img" asp-append-version="true" />
+        <span class="pc-brand-text">Pós<span class="accent">Corte</span></span>
+    </div>
+}

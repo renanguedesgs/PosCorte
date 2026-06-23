@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using PosCorte.Domain.Entities;
 
 namespace PosCorte.API.Data
@@ -11,6 +10,10 @@ namespace PosCorte.API.Data
         public DbSet<Usuario> Usuarios => Set<Usuario>();
         public DbSet<Projeto> Projetos => Set<Projeto>();
         public DbSet<OrdemServico> OrdensServico => Set<OrdemServico>();
+        public DbSet<Marceneiro> Marceneiros => Set<Marceneiro>();
+        public DbSet<Avaliacao> Avaliacoes => Set<Avaliacao>();
+        public DbSet<Pagamento> Pagamentos => Set<Pagamento>();
+        public DbSet<Liquidacao> Liquidacoes => Set<Liquidacao>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,6 +46,7 @@ namespace PosCorte.API.Data
                 entity.Property(e => e.CepObra).HasMaxLength(10);
                 entity.Property(e => e.EnderecoCompleto).HasMaxLength(500);
                 entity.Property(e => e.StatusProjeto).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.MotivoDisputa).HasMaxLength(1000);
                 entity.Property(e => e.DataCriacao).HasDefaultValueSql("NOW()");
                 entity.HasOne<Usuario>()
                       .WithMany()
@@ -64,6 +68,80 @@ namespace PosCorte.API.Data
                 entity.HasOne<Projeto>()
                       .WithMany()
                       .HasForeignKey(e => e.ProjetoId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Marceneiro>(entity =>
+            {
+                entity.ToTable("marceneiros");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+                entity.Property(e => e.Nome).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Email).HasMaxLength(200);
+                entity.Property(e => e.Telefone).HasMaxLength(20);
+                entity.Property(e => e.FotoUrl).HasMaxLength(500);
+                entity.Property(e => e.Cidade).HasMaxLength(120);
+                entity.Property(e => e.Estado).HasMaxLength(60);
+                entity.Property(e => e.Bairro).HasMaxLength(120);
+                entity.Property(e => e.Cep).HasMaxLength(10);
+                entity.Property(e => e.Especialidades).HasMaxLength(300);
+                entity.Property(e => e.Bio).HasMaxLength(600);
+                entity.Property(e => e.NotaMedia).HasColumnType("numeric(3,2)");
+                entity.Property(e => e.OrigemExterna).HasMaxLength(100);
+                entity.HasIndex(e => e.OrigemExterna);
+                entity.Property(e => e.DataCadastro).HasDefaultValueSql("NOW()");
+            });
+
+            modelBuilder.Entity<Avaliacao>(entity =>
+            {
+                entity.ToTable("avaliacoes");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+                entity.Property(e => e.AutorNome).HasMaxLength(200);
+                entity.Property(e => e.Comentario).HasMaxLength(1000);
+                entity.Property(e => e.DataCriacao).HasDefaultValueSql("NOW()");
+                entity.HasIndex(e => e.MarceneiroId);
+                entity.HasOne<Marceneiro>()
+                      .WithMany()
+                      .HasForeignKey(e => e.MarceneiroId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Pagamento>(entity =>
+            {
+                entity.ToTable("pagamentos");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+                entity.Property(e => e.Modo).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.AsaasPaymentId).HasMaxLength(100);
+                entity.HasIndex(e => e.AsaasPaymentId);
+                entity.Property(e => e.AsaasCustomerId).HasMaxLength(100);
+                entity.Property(e => e.ValorTotal).HasColumnType("numeric(12,2)");
+                entity.Property(e => e.ValorMarceneiro).HasColumnType("numeric(12,2)");
+                entity.Property(e => e.ValorPlataforma).HasColumnType("numeric(12,2)");
+                entity.Property(e => e.PixCopiaECola).HasMaxLength(2000);
+                entity.Property(e => e.InvoiceUrl).HasMaxLength(500);
+                entity.Property(e => e.DataCriacao).HasDefaultValueSql("NOW()");
+                entity.HasOne<Projeto>()
+                      .WithMany()
+                      .HasForeignKey(e => e.ProjetoId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Liquidacao>(entity =>
+            {
+                entity.ToTable("liquidacoes");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.ValorMarceneiro).HasColumnType("numeric(12,2)");
+                entity.Property(e => e.ValorPlataforma).HasColumnType("numeric(12,2)");
+                entity.Property(e => e.AsaasSplitId).HasMaxLength(100);
+                entity.Property(e => e.DataCriacao).HasDefaultValueSql("NOW()");
+                entity.HasOne<Pagamento>()
+                      .WithMany()
+                      .HasForeignKey(e => e.PagamentoId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
         }

@@ -15,6 +15,8 @@ namespace PosCorte.Tests.Controllers
         private readonly Mock<IRepositorio<Projeto>> _projetoRepoMock;
         private readonly Mock<IRepositorio<Usuario>> _usuarioRepoMock;
         private readonly Mock<IPrecificacaoService> _precificacaoMock;
+        private readonly Mock<IPagamentoService> _pagamentoMock;
+        private readonly Mock<IVistoriaService> _vistoriaMock;
         private readonly ProjetosController _controller;
 
         public ProjetosControllerTests()
@@ -23,11 +25,26 @@ namespace PosCorte.Tests.Controllers
             _projetoRepoMock = new Mock<IRepositorio<Projeto>>();
             _usuarioRepoMock = new Mock<IRepositorio<Usuario>>();
             _precificacaoMock = new Mock<IPrecificacaoService>();
+            _pagamentoMock = new Mock<IPagamentoService>();
+            _vistoriaMock = new Mock<IVistoriaService>();
             _controller = new ProjetosController(
                 _loggerMock.Object,
                 _projetoRepoMock.Object,
                 _usuarioRepoMock.Object,
-                _precificacaoMock.Object);
+                _precificacaoMock.Object,
+                _pagamentoMock.Object,
+                _vistoriaMock.Object);
+
+            var principal = new System.Security.Claims.ClaimsPrincipal(
+                new System.Security.Claims.ClaimsIdentity(new[]
+                {
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, "1"),
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "Admin")
+                }, "TestAuth"));
+            _controller.ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext
+            {
+                HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext { User = principal }
+            };
         }
 
         [Fact]

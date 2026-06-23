@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PosCorte.API.Models.DTOs;
 using PosCorte.API.Interfaces;
@@ -6,6 +7,7 @@ using PosCorte.Domain.Entities;
 namespace PosCorte.API.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/v1/usuarios")]
     [Produces("application/json")]
     public class UsuariosController : ControllerBase
@@ -22,14 +24,14 @@ namespace PosCorte.API.Controllers
         }
 
         /// <summary>
-        /// Criar novo usuário (Arquiteto/Designer)
+        /// Criar novo usuÃ¡rio (Arquiteto/Designer)
         /// </summary>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<UsuarioDTO>> CriarUsuario([FromBody] CreateUsuarioDTO dto)
         {
-            _logger.LogInformation("Criando usuário: {Email}", dto.Email);
+            _logger.LogInformation("Criando usuÃ¡rio: {Email}", dto.Email);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -53,13 +55,13 @@ namespace PosCorte.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao criar usuário");
-                return StatusCode(500, new { error = "Erro ao criar usuário" });
+                _logger.LogError(ex, "Erro ao criar usuÃ¡rio");
+                return StatusCode(500, new { error = "Erro ao criar usuÃ¡rio" });
             }
         }
 
         /// <summary>
-        /// Obter usuário por ID
+        /// Obter usuÃ¡rio por ID
         /// </summary>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -69,7 +71,7 @@ namespace PosCorte.API.Controllers
             var usuario = await _usuarioRepo.GetByIdAsync(id);
 
             if (usuario == null)
-                return NotFound(new { error = "Usuário não encontrado" });
+                return NotFound(new { error = "UsuÃ¡rio nÃ£o encontrado" });
 
             return Ok(new UsuarioDTO
             {
@@ -81,7 +83,7 @@ namespace PosCorte.API.Controllers
         }
 
         /// <summary>
-        /// Listar todos os usuários
+        /// Listar todos os usuÃ¡rios
         /// </summary>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]

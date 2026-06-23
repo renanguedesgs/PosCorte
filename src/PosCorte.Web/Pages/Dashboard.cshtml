@@ -1,0 +1,88 @@
+@page
+@model PosCorte.Web.Pages.DashboardModel
+@using PosCorte.Web.Services
+@{
+    ViewData["Title"] = "Dashboard";
+    var primeiroNome = Model.NomeUsuario.Split(' ').FirstOrDefault() ?? Model.NomeUsuario;
+}
+
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <span class="pc-eyebrow">Central do arquiteto</span>
+            <h1 class="h3 fw-bold mb-0 mt-1">Olá, @primeiroNome 👋</h1>
+        </div>
+        <a asp-page="/Projetos/Criar" class="btn btn-pc-primary"><i class="bi bi-plus-lg me-1"></i>Novo projeto</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="pc-tile d-flex align-items-center gap-3">
+                <div class="tile-icon" style="background:var(--pc-primary-soft);color:var(--pc-primary)"><i class="bi bi-folder"></i></div>
+                <div><div class="tile-num">@Model.TotalProjetos</div><div class="tile-lbl">Projetos</div></div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="pc-tile d-flex align-items-center gap-3">
+                <div class="tile-icon" style="background:var(--pc-warn-soft);color:var(--pc-warn)"><i class="bi bi-hourglass-split"></i></div>
+                <div><div class="tile-num">@Model.AguardandoPagamento</div><div class="tile-lbl">Aguardando pagamento</div></div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="pc-tile d-flex align-items-center gap-3">
+                <div class="tile-icon" style="background:var(--pc-success-soft);color:var(--pc-success)"><i class="bi bi-arrow-repeat"></i></div>
+                <div><div class="tile-num">@Model.EmAndamento</div><div class="tile-lbl">Em andamento</div></div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="pc-tile d-flex align-items-center gap-3">
+                <div class="tile-icon" style="background:var(--pc-info-soft);color:var(--pc-info)"><i class="bi bi-truck"></i></div>
+                <div><div class="tile-num">@Model.TotalOrdens</div><div class="tile-lbl">Ordens de serviço</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pc-card">
+        <div class="pc-card-body d-flex justify-content-between align-items-center" style="padding-bottom:0">
+            <h5 class="fw-bold mb-3">Projetos recentes</h5>
+            <a asp-page="/Projetos/Index" class="small fw-semibold">Ver todos <i class="bi bi-arrow-right"></i></a>
+        </div>
+        @if (!Model.Projetos.Any())
+        {
+            <div class="pc-empty">
+                <div class="icon"><i class="bi bi-inbox"></i></div>
+                <p class="mt-2 mb-3">Você ainda não tem projetos.</p>
+                <a asp-page="/Projetos/Criar" class="btn btn-pc-primary btn-sm">Criar primeiro projeto</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="pc-table">
+                    <thead>
+                        <tr><th>Projeto</th><th>Local</th><th>Peças / Gavetas</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.Projetos.OrderByDescending(x => x.Id).Take(8))
+                        {
+                            var (css, label) = UiHelper.StatusProjeto(p.StatusProjeto);
+                            <tr>
+                                <td class="fw-semibold">@p.NomeProjeto</td>
+                                <td class="text-muted">@(string.IsNullOrEmpty(p.CepObra) ? "—" : p.CepObra)</td>
+                                <td>@p.QtdPecas peças · @p.QtdGavetas gavetas</td>
+                                <td><span class="pc-status @css">@label</span></td>
+                                <td class="text-end">
+                                    @if (p.StatusProjeto == "Aguardando_Pagamento")
+                                    {
+                                        <a asp-page="/Projetos/Pagar" asp-route-id="@p.Id" class="btn btn-pc-primary btn-sm me-1"><i class="bi bi-qr-code me-1"></i>Pagar</a>
+                                    }
+                                    <a asp-page="/Projetos/Detalhes" asp-route-id="@p.Id" class="btn btn-pc-ghost btn-sm">Detalhes</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

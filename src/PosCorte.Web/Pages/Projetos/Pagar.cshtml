@@ -1,0 +1,115 @@
+@page "{id:int}"
+@model PosCorte.Web.Pages.Projetos.PagarModel
+@{
+    ViewData["Title"] = "Pagar com PIX";
+}
+
+<div class="container py-4">
+    <a asp-page="/Projetos/Detalhes" asp-route-id="@Model.Projeto!.Id" class="text-muted small">
+        <i class="bi bi-arrow-left me-1"></i>Voltar ao projeto
+    </a>
+
+    <h1 class="h3 fw-bold mt-2 mb-1">Pagar montagem com PIX</h1>
+    <p class="text-muted mb-4">@Model.Projeto!.NomeProjeto — pagamento seguro em escrow</p>
+
+    @if (!string.IsNullOrEmpty(Model.Erro))
+    {
+        <div class="pc-alert pc-alert-danger mb-3">@Model.Erro</div>
+    }
+
+    @if (Model.Pix is not null)
+    {
+        @if (!string.IsNullOrEmpty(Model.Pix.Aviso))
+        {
+            <div class="pc-alert pc-alert-info mb-3">
+                <i class="bi bi-info-circle me-1"></i>@Model.Pix.Aviso
+            </div>
+        }
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="pc-card">
+                    <div class="pc-card-body text-center">
+                        <div class="display-6 fw-bold text-primary mb-2">
+                            @Model.Pix.ValorTotal.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"))
+                        </div>
+                        <p class="text-muted small mb-4">Valor total · Modo: <strong>@Model.Pix.Modo</strong></p>
+
+                        @if (!string.IsNullOrEmpty(Model.Pix.QrCodeBase64))
+                        {
+                            <img src="data:image/png;base64,@Model.Pix.QrCodeBase64" alt="QR Code PIX" class="img-fluid mb-3" style="max-width:220px" />
+                        }
+                        else
+                        {
+                            <div class="pc-empty py-4 mb-3">
+                                <div class="icon"><i class="bi bi-qr-code"></i></div>
+                                <p class="small mb-0">QR Code disponível quando o Asaas estiver configurado.</p>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.Pix.PixCopiaECola))
+                        {
+                            <label class="form-label small text-start w-100">PIX copia e cola</label>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control form-control-sm" id="pixCopia" readonly value="@Model.Pix.PixCopiaECola" />
+                                <button class="btn btn-pc-ghost btn-sm" type="button" onclick="navigator.clipboard.writeText(document.getElementById('pixCopia').value)">Copiar</button>
+                            </div>
+                        }
+
+                        @if (Model.Pix.ExpiraEm.HasValue)
+                        {
+                            <p class="small text-muted mb-0">Expira em @Model.Pix.ExpiraEm.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="pc-card mb-3">
+                    <div class="pc-card-body">
+                        <h5 class="fw-bold mb-3">Como funciona o escrow</h5>
+                        <ul class="small text-muted mb-0">
+                            <li>O valor fica retido até a montagem ser concluída</li>
+                            <li><strong>80%</strong> repassado ao marceneiro (@Model.Pix.ValorMarceneiro.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("pt-BR")))</li>
+                            <li><strong>20%</strong> taxa PósCorte (@Model.Pix.ValorPlataforma.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("pt-BR")))</li>
+                        </ul>
+                    </div>
+                </div>
+
+                @if (Model.IsDevelopment && Model.Pix.Modo == "Stub")
+                {
+                    <div class="pc-alert pc-alert-danger">
+                        <strong>Desenvolvimento:</strong> sem Asaas configurado. Use o botão abaixo para simular pagamento <em>sem cobrar dinheiro real</em>.
+                    </div>
+                    <form method="post" asp-page-handler="Simular">
+                        <input type="hidden" name="id" value="@Model.Projeto.Id" />
+                        <input type="hidden" name="pagamentoId" value="@Model.Pix.PagamentoId" />
+                        <button type="submit" class="btn btn-pc-primary w-100">
+                            <i class="bi bi-lightning-charge me-1"></i>Simular pagamento (dev)
+                        </button>
+                    </form>
+                }
+                else if (!string.IsNullOrEmpty(Model.Pix.InvoiceUrl))
+                {
+                    <a href="@Model.Pix.InvoiceUrl" target="_blank" rel="noopener" class="btn btn-pc-primary w-100">
+                        Abrir fatura Asaas
+                    </a>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @if (Model.Pix is not null && Model.Pix.Modo != "Stub")
+    {
+        <script>
+            setInterval(async () => {
+                const r = await fetch(`?handler=Status&id=@Model.Projeto!.Id`);
+                if (!r.ok) return;
+                const j = await r.json();
+                if (j.pago && j.redirect) window.location = j.redirect;
+            }, 8000);
+        </script>
+    }
+}

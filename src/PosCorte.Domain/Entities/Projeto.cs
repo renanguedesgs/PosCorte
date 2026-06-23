@@ -13,6 +13,12 @@ namespace PosCorte.Domain.Entities
         public string StatusProjeto { get; set; } = string.Empty;
         public DateTime DataCriacao { get; set; }
 
+        /// <summary>Prazo para o arquiteto aprovar/contestar a montagem (escrow). Após esse prazo, liquida automaticamente.</summary>
+        public DateTime? DataLimiteVistoria { get; set; }
+
+        /// <summary>Motivo informado pelo arquiteto ao abrir disputa.</summary>
+        public string? MotivoDisputa { get; set; }
+
         public Projeto() { }
 
         public Projeto(int usuarioId, string nomeProjeto, string urlArquivo,

@@ -1,0 +1,73 @@
+@page
+@model PosCorte.Web.Pages.Admin.FinanceiroModel
+@{
+    ViewData["Title"] = "Financeiro";
+}
+
+<div class="container py-4">
+    <a asp-page="/Admin/Index" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Voltar ao painel</a>
+    <h1 class="h3 fw-bold mt-2 mb-4">Como funciona o pagamento</h1>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="pc-card mb-4">
+                <div class="pc-card-body">
+                    <h5 class="fw-bold mb-3">Fluxo do dinheiro (modelo Escrow)</h5>
+                    <div class="d-flex flex-column gap-3">
+                        @{
+                            var passos = new[]
+                            {
+                                ("1", "Arquiteto paga via PIX", "O arquiteto vê o orçamento cheio (ex.: R$ 3.000) e paga na plataforma. Esse valor inclui sua margem de 20% + repasse ao marceneiro."),
+                                ("2", "Dinheiro fica retido (Escrow)", "O PIX não vai direto pro marceneiro. Fica retido na conta intermediária até o serviço ser concluído e validado."),
+                                ("3", "Marceneiro executa o serviço", "Ele vê apenas o valor DELE (80% = ex.: R$ 2.400), não o preço cheio. Aceita ou recusa no app dele (ainda a construir)."),
+                                ("4", "Vistoria de 72h", "Após conclusão, o arquiteto tem 72h para validar ou abrir disputa."),
+                                ("5", "Split automático", "Se tudo OK: 80% vai pro marceneiro, 20% fica com você (PósCorte).")
+                            };
+                        }
+                        @foreach (var (num, titulo, desc) in passos)
+                        {
+                            <div class="d-flex gap-3">
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;font-weight:700">@num</div>
+                                <div><strong>@titulo</strong><p class="text-muted mb-0 small">@desc</p></div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="pc-card">
+                <div class="pc-card-body">
+                    <h5 class="fw-bold mb-3">Exemplo numérico (cozinha R$ 3.000)</h5>
+                    <table class="table table-sm mb-0">
+                        <tr><td>Arquiteto paga (PIX)</td><td class="text-end fw-bold">R$ 3.000,00</td></tr>
+                        <tr><td>Repasse ao marceneiro (80%)</td><td class="text-end">R$ 2.400,00</td></tr>
+                        <tr class="table-success"><td><strong>Sua margem PósCorte (20%)</strong></td><td class="text-end fw-bold">R$ 600,00</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="pc-card border-warning mb-4">
+                <div class="pc-card-body">
+                    <h5 class="fw-bold text-warning mb-2"><i class="bi bi-exclamation-triangle me-1"></i>Estado atual</h5>
+                    <p class="small mb-2"><strong>Gateway:</strong> Nenhum integrado ainda.</p>
+                    <p class="small mb-2">O código está preparado para <strong>Asaas</strong> ou <strong>Iugu</strong>, mas hoje o <code>PagamentoService</code> é um <em>stub</em> que sempre retorna "pago" sem cobrar PIX de verdade.</p>
+                    <p class="small mb-0">Ou seja: o fluxo de negócio funciona, mas <strong>ainda não entra dinheiro real</strong>.</p>
+                </div>
+            </div>
+
+            <div class="pc-card">
+                <div class="pc-card-body">
+                    <h5 class="fw-bold mb-2">Próximo passo técnico</h5>
+                    <ul class="small text-muted mb-0">
+                        <li>Criar conta Asaas/Iugu</li>
+                        <li>Gerar cobrança PIX por projeto</li>
+                        <li>Webhook confirma pagamento → Escrow</li>
+                        <li>Split automático após vistoria</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

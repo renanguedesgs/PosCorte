@@ -11,6 +11,14 @@ namespace PosCorte.API.Services
             _logger = logger;
         }
 
+        public async Task NotificarEventoAsync(NotificacaoEvento evento, int projetoId, string mensagem)
+        {
+            // STUB: hoje apenas registra. Para ativar WhatsApp (Z-API/Twilio) e e-mail (Resend/SendGrid),
+            // implemente o envio aqui usando as credenciais documentadas em docs/INTEGRACAO_NOTIFICACOES.md.
+            _logger.LogInformation("[NOTIFICACAO] {Evento} · Projeto {ProjetoId} · {Mensagem}", evento, projetoId, mensagem);
+            await Task.CompletedTask;
+        }
+
         public async Task<bool> NotificarArquiteto(int usuarioId, string mensagem)
         {
             _logger.LogInformation("Notificando arquiteto {UsuarioId}: {Mensagem}", usuarioId, mensagem);

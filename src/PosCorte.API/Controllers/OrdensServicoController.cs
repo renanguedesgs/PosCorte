@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PosCorte.API.Interfaces;
 using PosCorte.API.Models.DTOs;
@@ -6,6 +7,7 @@ using PosCorte.Domain.Entities;
 namespace PosCorte.API.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/v1/ordens-servico")]
     [Produces("application/json")]
     public class OrdensServicoController : ControllerBase
@@ -25,7 +27,7 @@ namespace PosCorte.API.Controllers
         }
 
         /// <summary>
-        /// Listar todas as ordens de serviÁo
+        /// Listar todas as ordens de servi√ßo
         /// </summary>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -36,7 +38,7 @@ namespace PosCorte.API.Controllers
         }
 
         /// <summary>
-        /// Obter ordem de serviÁo por ID
+        /// Obter ordem de servi√ßo por ID
         /// </summary>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -46,13 +48,13 @@ namespace PosCorte.API.Controllers
             var ordem = await _ordemRepo.GetByIdAsync(id);
 
             if (ordem == null)
-                return NotFound(new { error = "Ordem de serviÁo n„o encontrada" });
+                return NotFound(new { error = "Ordem de servi√ßo n√£o encontrada" });
 
             return Ok(MapToDTO(ordem));
         }
 
         /// <summary>
-        /// Listar ordens de serviÁo de um projeto
+        /// Listar ordens de servi√ßo de um projeto
         /// </summary>
         [HttpGet("projeto/{projetoId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -61,7 +63,7 @@ namespace PosCorte.API.Controllers
         {
             var projeto = await _projetoRepo.GetByIdAsync(projetoId);
             if (projeto == null)
-                return NotFound(new { error = "Projeto n„o encontrado" });
+                return NotFound(new { error = "Projeto n√£o encontrado" });
 
             var ordens = await _ordemRepo.GetAllAsync();
             var ordensDoProjeto = ordens.Where(o => o.ProjetoId == projetoId);
@@ -70,7 +72,7 @@ namespace PosCorte.API.Controllers
         }
 
         /// <summary>
-        /// Cancelar ordem de serviÁo
+        /// Cancelar ordem de servi√ßo
         /// </summary>
         [HttpPatch("{id}/cancelar")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -80,10 +82,10 @@ namespace PosCorte.API.Controllers
         {
             var ordem = await _ordemRepo.GetByIdAsync(id);
             if (ordem == null)
-                return NotFound(new { error = "Ordem de serviÁo n„o encontrada" });
+                return NotFound(new { error = "Ordem de servi√ßo n√£o encontrada" });
 
             if (ordem.StatusProvedor == "Concluido")
-                return BadRequest(new { error = "N„o È possÌvel cancelar uma ordem j· concluÌda" });
+                return BadRequest(new { error = "N√£o √© poss√≠vel cancelar uma ordem j√° conclu√≠da" });
 
             ordem.StatusProvedor = "Cancelado";
             ordem.DataAtualizacao = DateTime.UtcNow;

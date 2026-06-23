@@ -1,0 +1,147 @@
+@page
+@model PosCorte.Web.Pages.Marceneiros.DetalhesModel
+@using PosCorte.Web.Services
+@{
+    ViewData["Title"] = Model.Marceneiro?.Nome ?? "Marceneiro";
+}
+
+@if (Model.Marceneiro is null)
+{
+    <div class="container py-4"><div class="pc-empty"><p>Marceneiro não encontrado.</p></div></div>
+    return;
+}
+
+@{
+    var m = Model.Marceneiro;
+    var foto = string.IsNullOrEmpty(m.FotoUrl) ? "https://ui-avatars.com/api/?name=" + Uri.EscapeDataString(m.Nome) : m.FotoUrl;
+}
+
+<div class="container py-4">
+    <a asp-page="/Marceneiros/Index" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Voltar para marceneiros</a>
+
+    @if (!string.IsNullOrEmpty(Model.Mensagem))
+    {
+        <div class="pc-alert pc-alert-success mt-3"><i class="bi bi-check-circle me-1"></i>@Model.Mensagem</div>
+    }
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-4">
+            <div class="pc-card">
+                <div class="pc-card-body text-center">
+                    <img src="@foto" class="foto mx-auto d-block" style="width:110px;height:110px" alt="@m.Nome" />
+                    <h4 class="fw-bold mt-3 mb-1">
+                        @m.Nome
+                        @if (m.Verificado)
+                        {
+                            <i class="bi bi-patch-check-fill pc-verified"></i>
+                        }
+                    </h4>
+                    <div class="pc-stars lg">@Html.Raw(UiHelper.Estrelas(m.NotaMedia))</div>
+                    <div class="text-muted mt-1">@m.NotaMedia.ToString("0.0") · @m.TotalAvaliacoes avaliações</div>
+
+                    <div class="d-flex justify-content-center gap-4 mt-3">
+                        <div><div class="fw-bold fs-5">@m.TotalServicos</div><div class="tile-lbl">Serviços</div></div>
+                        <div><div class="fw-bold fs-5">@m.NotaMedia.ToString("0.0")</div><div class="tile-lbl">Nota</div></div>
+                    </div>
+
+                    <hr />
+                    <div class="text-start small">
+                        <div class="mb-2"><i class="bi bi-geo-alt me-2 text-muted"></i>@(string.IsNullOrEmpty(m.Cidade) ? "—" : m.Cidade)@(string.IsNullOrEmpty(m.Estado) ? "" : ", " + m.Estado)</div>
+                        @if (!string.IsNullOrEmpty(m.Telefone))
+                        {
+                            <div class="mb-2"><i class="bi bi-whatsapp me-2 text-success"></i>
+                                <a href="https://wa.me/55@(new string(m.Telefone.Where(char.IsDigit).ToArray()))" target="_blank" rel="noopener">Conversar no WhatsApp</a>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mt-2">
+                        @if (m.Disponivel)
+                        {
+                            <span class="pc-status st-alocado">Disponível para novos serviços</span>
+                        }
+                        else
+                        {
+                            <span class="pc-status st-cancelado">Ocupado no momento</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="pc-card mt-3">
+                <div class="pc-card-body">
+                    <h6 class="fw-bold mb-2">Especialidades</h6>
+                    @foreach (var esp in m.Especialidades)
+                    {
+                        <span class="pc-chip">@esp</span>
+                    }
+                    @if (!string.IsNullOrEmpty(m.Bio))
+                    {
+                        <p class="text-muted small mt-3 mb-0">@m.Bio</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="pc-card mb-4">
+                <div class="pc-card-body">
+                    <h5 class="fw-bold mb-3">Avaliar este marceneiro</h5>
+                    @if (!string.IsNullOrEmpty(Model.Erro))
+                    {
+                        <div class="pc-alert pc-alert-danger mb-3"><i class="bi bi-exclamation-circle me-1"></i>@Model.Erro</div>
+                    }
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label d-block">Nota</label>
+                            <div class="pc-rating-input">
+                                @for (var i = 5; i >= 1; i--)
+                                {
+                                    <input type="radio" name="Nota" value="@i" id="star@i" />
+                                    <label for="star@i"><i class="bi bi-star-fill"></i></label>
+                                }
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Comentário</label>
+                            <textarea name="Comentario" class="form-control" rows="3" placeholder="Como foi o serviço? Pontualidade, acabamento, organização..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-pc-primary"><i class="bi bi-send me-1"></i>Enviar avaliação</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="pc-card">
+                <div class="pc-card-body" style="padding-bottom:0">
+                    <h5 class="fw-bold mb-3">Avaliações (@m.TotalAvaliacoes)</h5>
+                </div>
+                @if (!m.Avaliacoes.Any())
+                {
+                    <div class="pc-empty">
+                        <div class="icon"><i class="bi bi-chat-square-text"></i></div>
+                        <p class="mt-2 mb-0 small">Ainda sem avaliações detalhadas. Seja o primeiro a avaliar!</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="px-3 pb-2">
+                        @foreach (var a in m.Avaliacoes)
+                        {
+                            <div class="py-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-semibold">@a.AutorNome</span>
+                                    <span class="pc-stars">@Html.Raw(UiHelper.Estrelas(a.Nota))</span>
+                                </div>
+                                @if (!string.IsNullOrEmpty(a.Comentario))
+                                {
+                                    <p class="text-muted mb-1 mt-1">@a.Comentario</p>
+                                }
+                                <div class="text-muted small">@a.DataCriacao.ToLocalTime().ToString("dd/MM/yyyy")</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

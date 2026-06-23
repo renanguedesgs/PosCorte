@@ -1,5 +1,6 @@
 using Xunit;
 using Moq;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PosCorte.API.Services;
 using PosCorte.API.Interfaces;
@@ -16,7 +17,40 @@ namespace PosCorte.Tests.Services
         {
             _loggerMock = new Mock<ILogger<ProvedorService>>();
             _provedorApiMock = new Mock<IProvedorApi>();
-            _service = new ProvedorService(_provedorApiMock.Object, _loggerMock.Object);
+
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["ProvedorApi:BaseUrl"] = "https://api.parceiro-real.com",
+                    ["ProvedorApi:ApiKey"] = "chave-de-teste",
+                    ["ProvedorApi:Enabled"] = "true"
+                })
+                .Build();
+
+            _service = new ProvedorService(_provedorApiMock.Object, _loggerMock.Object, config);
+        }
+
+        [Fact]
+        public void EstaConfigurado_ComChaveEBaseUrlReal_DeveSerTrue()
+        {
+            Assert.True(_service.EstaConfigurado);
+        }
+
+        [Fact]
+        public void EstaConfigurado_SemChave_DeveSerFalse()
+        {
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["ProvedorApi:BaseUrl"] = "https://api.provider.com",
+                    ["ProvedorApi:ApiKey"] = "",
+                    ["ProvedorApi:Enabled"] = "false"
+                })
+                .Build();
+
+            var service = new ProvedorService(_provedorApiMock.Object, _loggerMock.Object, config);
+
+            Assert.False(service.EstaConfigurado);
         }
 
         [Fact]
@@ -24,7 +58,7 @@ namespace PosCorte.Tests.Services
         {
             var request = new ProvedorRequest
             {
-                EnderecoCompleto = "Rua Teste, 123 - São Paulo/SP",
+                EnderecoCompleto = "Rua Teste, 123 - SÃ£o Paulo/SP",
                 Cep = "01310-100",
                 DataAgendamento = DateTime.UtcNow.AddDays(1),
                 ValorTotal = 500.00m,
@@ -55,7 +89,7 @@ namespace PosCorte.Tests.Services
             var request = new ProvedorRequest { EnderecoCompleto = "Rua Teste, 123" };
 
             _provedorApiMock.Setup(api => api.CriarOrdemServico(It.IsAny<ProvedorRequest>()))
-                .ThrowsAsync(new HttpRequestException("Serviço indisponível"));
+                .ThrowsAsync(new HttpRequestException("ServiÃ§o indisponÃ­vel"));
 
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 _service.CriarOrdemServicoAsync(request));

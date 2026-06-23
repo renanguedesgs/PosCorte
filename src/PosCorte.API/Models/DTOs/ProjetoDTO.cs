@@ -11,6 +11,13 @@ namespace PosCorte.API.Models.DTOs
         public string CepObra { get; set; } = string.Empty;
         public string EnderecoCompleto { get; set; } = string.Empty;
         public string StatusProjeto { get; set; } = string.Empty;
+        public DateTime? DataLimiteVistoria { get; set; }
+        public string? MotivoDisputa { get; set; }
+    }
+
+    public class AbrirDisputaDTO
+    {
+        public string Motivo { get; set; } = string.Empty;
     }
 
     public class CreateProjetoDTO

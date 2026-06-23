@@ -1,0 +1,209 @@
+@page
+@model PosCorte.Web.Pages.Projetos.DetalhesModel
+@using PosCorte.Web.Services
+@{
+    ViewData["Title"] = Model.Projeto?.NomeProjeto ?? "Projeto";
+    var ptBR = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+    var (stCss, stLabel) = Model.Projeto is null
+        ? ("st-default", "—")
+        : UiHelper.StatusProjeto(Model.Projeto.StatusProjeto);
+}
+
+@if (Model.Projeto is null)
+{
+    <div class="container py-4"><div class="pc-empty mt-4"><p>Projeto não encontrado.</p></div></div>
+    return;
+}
+
+<div class="container py-4">
+    <a asp-page="/Projetos/Index" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Voltar para projetos</a>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-2 mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1">@Model.Projeto.NomeProjeto</h1>
+            <span class="pc-status @stCss">@stLabel</span>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Mensagem))
+    {
+        <div class="pc-alert pc-alert-success mb-3"><i class="bi bi-check-circle me-1"></i>@Model.Mensagem</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Erro))
+    {
+        <div class="pc-alert pc-alert-danger mb-3"><i class="bi bi-exclamation-triangle me-1"></i>@Model.Erro</div>
+    }
+
+    <!-- STEPPER -->
+    <div class="pc-card mb-4">
+        <div class="pc-card-body">
+            <ul class="pc-progress">
+                @foreach (var step in UiHelper.ProgressoProjeto(Model.Projeto.StatusProjeto))
+                {
+                    var icon = step.State switch
+                    {
+                        "done" => "<i class=\"bi bi-check-lg\"></i>",
+                        "cancel" => "<i class=\"bi bi-x-lg\"></i>",
+                        _ => ""
+                    };
+                    <li class="@step.State">
+                        <span class="dot">@Html.Raw(icon)</span>
+                        @step.Label
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <!-- AÇÃO DE VISTORIA -->
+            @if (Model.Projeto.StatusProjeto == "Aguardando_Vistoria")
+            {
+                <div class="pc-card mb-4" style="border-color:#bae6fd">
+                    <div class="pc-card-body">
+                        <h5 class="fw-bold mb-1"><i class="bi bi-clipboard-check text-primary me-1"></i>A montagem foi concluída</h5>
+                        <p class="text-muted small mb-3">
+                            Confira o serviço na obra. Ao aprovar, liberamos o pagamento ao montador.
+                            @if (Model.Projeto.DataLimiteVistoria.HasValue)
+                            {
+                                <text>Se você não se manifestar até <strong>@Model.Projeto.DataLimiteVistoria.Value.ToLocalTime().ToString("dd/MM HH:mm")</strong>, o valor é liberado automaticamente.</text>
+                            }
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <form method="post" asp-page-handler="Aprovar" asp-route-id="@Model.Projeto.Id">
+                                <button class="btn btn-pc-primary"><i class="bi bi-check2-circle me-1"></i>Aprovar montagem</button>
+                            </form>
+                            <button class="btn btn-pc-ghost" data-bs-toggle="collapse" data-bs-target="#formDisputa">
+                                <i class="bi bi-flag me-1"></i>Abrir disputa
+                            </button>
+                        </div>
+                        <div class="collapse mt-3" id="formDisputa">
+                            <form method="post" asp-page-handler="Disputa" asp-route-id="@Model.Projeto.Id">
+                                <label class="form-label">Descreva o problema</label>
+                                <textarea name="motivo" class="form-control mb-2" rows="3" required placeholder="Ex.: porta desalinhada, peça faltando, montador não concluiu..."></textarea>
+                                <button class="btn btn-pc-accent btn-sm" type="submit">Enviar disputa</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (Model.Projeto.StatusProjeto == "Em_Disputa")
+            {
+                <div class="pc-alert pc-alert-warn mb-4">
+                    <strong><i class="bi bi-flag me-1"></i>Disputa em análise.</strong>
+                    O valor está retido em escrow. Motivo: @Model.Projeto.MotivoDisputa
+                </div>
+            }
+            else if (Model.Projeto.StatusProjeto == "Concluido")
+            {
+                <div class="pc-alert pc-alert-success mb-4">
+                    <strong><i class="bi bi-patch-check me-1"></i>Projeto concluído.</strong>
+                    A montagem foi aprovada e o pagamento liberado.
+                </div>
+            }
+
+            <div class="pc-card mb-4">
+                <div class="pc-card-body">
+                    <h5 class="fw-bold mb-3">Dados do projeto</h5>
+                    <div class="row g-3">
+                        <div class="col-sm-6"><div class="tile-lbl">Peças</div><div class="fw-semibold">@Model.Projeto.QtdPecas</div></div>
+                        <div class="col-sm-6"><div class="tile-lbl">Gavetas</div><div class="fw-semibold">@Model.Projeto.QtdGavetas</div></div>
+                        <div class="col-sm-6"><div class="tile-lbl">CEP da obra</div><div class="fw-semibold">@(string.IsNullOrEmpty(Model.Projeto.CepObra) ? "—" : Model.Projeto.CepObra)</div></div>
+                        <div class="col-sm-6"><div class="tile-lbl">Arquivo de corte</div>
+                            <div class="fw-semibold text-truncate">
+                                @if (!string.IsNullOrEmpty(Model.Projeto.UrlArquivoCorteCloud))
+                                {
+                                    <a href="@Model.Projeto.UrlArquivoCorteCloud" target="_blank" rel="noopener">Abrir <i class="bi bi-box-arrow-up-right small"></i></a>
+                                }
+                                else { <text>—</text> }
+                            </div>
+                        </div>
+                        <div class="col-12"><div class="tile-lbl">Endereço</div><div class="fw-semibold">@(string.IsNullOrEmpty(Model.Projeto.EnderecoCompleto) ? "—" : Model.Projeto.EnderecoCompleto)</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pc-card">
+                <div class="pc-card-body" style="padding-bottom:0">
+                    <h5 class="fw-bold mb-3">Ordens de serviço</h5>
+                </div>
+                @if (!Model.Ordens.Any())
+                {
+                    <div class="pc-empty">
+                        <div class="icon"><i class="bi bi-truck"></i></div>
+                        <p class="mt-2 mb-0 small">Nenhuma ordem ainda. Uma ordem é criada automaticamente após a confirmação do pagamento.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="pc-table">
+                            <thead><tr><th>Montador</th><th>Telefone</th><th>Status</th><th>Atualização</th></tr></thead>
+                            <tbody>
+                                @foreach (var o in Model.Ordens)
+                                {
+                                    var (oCss, oLabel) = UiHelper.StatusProvedor(o.StatusProvedor);
+                                    <tr>
+                                        <td class="fw-semibold">@(string.IsNullOrEmpty(o.MontadorNome) ? "Aguardando alocação" : o.MontadorNome)</td>
+                                        <td class="text-muted">@(string.IsNullOrEmpty(o.MontadorTelefone) ? "—" : o.MontadorTelefone)</td>
+                                        <td><span class="pc-status @oCss">@oLabel</span></td>
+                                        <td class="text-muted">@o.DataAtualizacao.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+
+            @if (Model.IsDevelopment && Model.Projeto.StatusProjeto is "Prestador_Alocado" or "Aguardando_Provedor")
+            {
+                <form method="post" asp-page-handler="SimularConclusao" asp-route-id="@Model.Projeto.Id" class="mt-3">
+                    <button class="btn btn-pc-ghost btn-sm"><i class="bi bi-lightning-charge me-1"></i>DEV: simular montagem concluída</button>
+                </form>
+            }
+        </div>
+
+        <div class="col-lg-5">
+            @if (Model.Orcamento is not null)
+            {
+                <!-- BREAKDOWN ANCORADO: a taxa é o seguro -->
+                <div class="pc-card mb-3">
+                    <div class="pc-card-body">
+                        <span class="pc-eyebrow">Resumo do pagamento</span>
+                        <div class="pc-breakdown mt-3">
+                            <div class="pc-breakdown-row">
+                                <span class="text-muted"><i class="bi bi-tools me-1"></i>Montador (mão de obra)</span>
+                                <span class="fw-semibold">@Model.Orcamento.CustoPrestador.ToString("C", ptBR)</span>
+                            </div>
+                            <div class="pc-breakdown-row">
+                                <span class="seguro"><i class="bi bi-shield-lock text-success"></i> Taxa PósCorte <span class="tag">seguro</span></span>
+                                <span class="fw-semibold">@Model.Orcamento.MargemLucro.ToString("C", ptBR)</span>
+                            </div>
+                            <div class="pc-breakdown-row total">
+                                <span>Total ao arquiteto</span>
+                                <span>@Model.Orcamento.ValorTotal.ToString("C", ptBR)</span>
+                            </div>
+                        </div>
+                        <div class="pc-guarantee-row mt-3">
+                            <span class="item"><i class="bi bi-check-circle-fill"></i> Escrow</span>
+                            <span class="item"><i class="bi bi-check-circle-fill"></i> Montador verificado</span>
+                            <span class="item"><i class="bi bi-check-circle-fill"></i> Suporte a disputa</span>
+                        </div>
+                        @if (Model.Projeto.StatusProjeto == "Aguardando_Pagamento")
+                        {
+                            <a asp-page="/Projetos/Pagar" asp-route-id="@Model.Projeto.Id" class="btn btn-pc-primary w-100 mt-3">
+                                <i class="bi bi-qr-code me-1"></i>Pagar com PIX
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="pc-orcamento"><p class="text-muted mt-2 mb-0">Não foi possível calcular o orçamento.</p></div>
+            }
+        </div>
+    </div>
+</div>

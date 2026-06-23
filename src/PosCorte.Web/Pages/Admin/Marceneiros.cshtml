@@ -1,0 +1,60 @@
+@page
+@model PosCorte.Web.Pages.Admin.MarceneirosModel
+@using PosCorte.Web.Services
+@{
+    ViewData["Title"] = "Rede de marceneiros";
+}
+
+<div class="container py-4">
+    <a asp-page="/Admin/Index" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Painel Admin</a>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-2 mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1">Rede de marceneiros</h1>
+            <p class="text-muted mb-0">@Model.Marceneiros.Count profissionais (via provedor parceiro)</p>
+        </div>
+    </div>
+
+    <div class="pc-alert pc-alert-info mb-4">
+        <strong><i class="bi bi-info-circle me-1"></i>Como funciona:</strong>
+        Os marceneiros vêm da <strong>API do provedor parceiro</strong> (ex.: Helpie / Rede Gaba).
+        Quando o pagamento é confirmado, o PósCorte cria a ordem no provedor e o <strong>montador é alocado por eles</strong>.
+        O marceneiro <strong>não usa</strong> o PósCorte e <strong>recebe o pagamento na plataforma do provedor</strong>.
+        Não há cadastro manual nem perfis fictícios.
+    </div>
+
+    @if (!Model.Marceneiros.Any())
+    {
+        <div class="pc-empty pc-card">
+            <p class="mb-1"><strong>Nenhum marceneiro sincronizado ainda.</strong></p>
+            <p class="small text-muted mb-0">
+                Configure a integração em <code>ProvedorApi</code> (BaseUrl + ApiKey do parceiro) e habilite
+                <code>Enabled=true</code>. A partir daí o provedor aloca os montadores automaticamente.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var m in Model.Marceneiros.Take(50))
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="pc-marceneiro">
+                        <div class="topo">
+                            <img src="@(string.IsNullOrEmpty(m.FotoUrl) ? "https://ui-avatars.com/api/?name="+Uri.EscapeDataString(m.Nome) : m.FotoUrl)" class="foto" alt="" loading="lazy" />
+                            <div>
+                                <div class="nome">@m.Nome @if(m.Verificado){<i class="bi bi-patch-check-fill pc-verified"></i>}</div>
+                                <div class="pc-stars">@Html.Raw(UiHelper.Estrelas(m.NotaMedia)) @m.NotaMedia.ToString("0.0")</div>
+                                <div class="small text-muted">@m.Cidade, @m.Estado · @m.TotalServicos serviços</div>
+                            </div>
+                        </div>
+                        <div class="rodape">
+                            <span class="pc-status @(m.Disponivel ? "st-alocado" : "st-cancelado")">@(m.Disponivel ? "Disponível" : "Ocupado")</span>
+                            <span class="small text-muted">Repasse: 80% do projeto</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

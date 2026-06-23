@@ -9,7 +9,7 @@ builder.Services.AddRazorPages();
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5047";
 builder.Services.AddHttpClient<ApiService>(c => c.BaseAddress = new Uri(apiBaseUrl));
 
-// ===== AUTH por Cookie (sessão web) =====
+// ===== AUTH por Cookie (sessÃ£o web) =====
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -20,7 +20,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.SlidingExpiration = true;
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+});
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(o =>

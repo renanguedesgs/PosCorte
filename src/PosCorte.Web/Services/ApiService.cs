@@ -35,7 +35,7 @@ namespace PosCorte.Web.Services
                 new StringContent(body, Encoding.UTF8, "application/json"));
 
             if (!res.IsSuccessStatusCode)
-                return (false, null, "Email ou senha inv·lidos");
+                return (false, null, "Email ou senha invùlidos");
 
             var json = await res.Content.ReadAsStringAsync();
             var obj = JsonSerializer.Deserialize<JsonElement>(json);
@@ -51,12 +51,12 @@ namespace PosCorte.Web.Services
             if (!res.IsSuccessStatusCode)
             {
                 var err = await res.Content.ReadAsStringAsync();
-                return (false, "Email j· cadastrado");
+                return (false, "Email jù cadastrado");
             }
             return (true, null);
         }
 
-        // ?? USU¡RIOS ?????????????????????????????????????????????
+        // ?? USUùRIOS ?????????????????????????????????????????????
         public async Task<List<UsuarioViewModel>> ListarUsuariosAsync()
         {
             SetAuthHeader();
@@ -107,6 +107,62 @@ namespace PosCorte.Web.Services
             return JsonSerializer.Deserialize<OrcamentoViewModel>(json, _json);
         }
 
+        public async Task<GerarPixViewModel?> GerarPixAsync(int projetoId)
+        {
+            SetAuthHeader();
+            var res = await _http.PostAsync($"api/v1/projetos/{projetoId}/gerar-pix", null);
+            if (!res.IsSuccessStatusCode) return null;
+            var json = await res.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<GerarPixViewModel>(json, _json);
+        }
+
+        public async Task<PagamentoStatusViewModel?> ObterStatusPagamentoAsync(int projetoId)
+        {
+            SetAuthHeader();
+            var res = await _http.GetAsync($"api/v1/projetos/{projetoId}/pagamento");
+            if (!res.IsSuccessStatusCode) return null;
+            var json = await res.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<PagamentoStatusViewModel>(json, _json);
+        }
+
+        public async Task<(bool ok, string? erro)> SimularPagamentoAsync(int pagamentoId)
+        {
+            SetAuthHeader();
+            var res = await _http.PostAsync($"api/v1/pagamentos/{pagamentoId}/simular-confirmacao", null);
+            if (!res.IsSuccessStatusCode)
+                return (false, await res.Content.ReadAsStringAsync());
+            return (true, null);
+        }
+
+        public async Task<(bool ok, string? erro)> AprovarMontagemAsync(int projetoId)
+        {
+            SetAuthHeader();
+            var res = await _http.PostAsync($"api/v1/projetos/{projetoId}/aprovar-montagem", null);
+            if (!res.IsSuccessStatusCode)
+                return (false, await res.Content.ReadAsStringAsync());
+            return (true, null);
+        }
+
+        public async Task<(bool ok, string? erro)> AbrirDisputaAsync(int projetoId, string motivo)
+        {
+            SetAuthHeader();
+            var body = JsonSerializer.Serialize(new { motivo });
+            var res = await _http.PostAsync($"api/v1/projetos/{projetoId}/abrir-disputa",
+                new StringContent(body, Encoding.UTF8, "application/json"));
+            if (!res.IsSuccessStatusCode)
+                return (false, await res.Content.ReadAsStringAsync());
+            return (true, null);
+        }
+
+        public async Task<(bool ok, string? erro)> SimularConclusaoMontagemAsync(int projetoId)
+        {
+            SetAuthHeader();
+            var res = await _http.PostAsync($"api/v1/projetos/{projetoId}/simular-conclusao-montagem", null);
+            if (!res.IsSuccessStatusCode)
+                return (false, await res.Content.ReadAsStringAsync());
+            return (true, null);
+        }
+
         // ?? ORDENS ???????????????????????????????????????????????
         public async Task<List<OrdemViewModel>> ListarOrdensAsync()
         {
@@ -115,6 +171,52 @@ namespace PosCorte.Web.Services
             if (!res.IsSuccessStatusCode) return new();
             var json = await res.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<List<OrdemViewModel>>(json, _json) ?? new();
+        }
+
+        // ?? MARCENEIROS ??????????????????????????????????????????
+        public async Task<List<MarceneiroViewModel>> ListarMarceneirosAsync(string? cidade = null, string? especialidade = null, decimal? notaMin = null)
+        {
+            SetAuthHeader();
+            var qs = new List<string>();
+            if (!string.IsNullOrWhiteSpace(cidade)) qs.Add($"cidade={Uri.EscapeDataString(cidade)}");
+            if (!string.IsNullOrWhiteSpace(especialidade)) qs.Add($"especialidade={Uri.EscapeDataString(especialidade)}");
+            if (notaMin.HasValue) qs.Add($"notaMin={notaMin.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            var query = qs.Count > 0 ? "?" + string.Join("&", qs) : "";
+
+            var res = await _http.GetAsync($"api/v1/marceneiros{query}");
+            if (!res.IsSuccessStatusCode) return new();
+            var json = await res.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<List<MarceneiroViewModel>>(json, _json) ?? new();
+        }
+
+        public async Task<MarceneiroDetalheViewModel?> ObterMarceneiroAsync(int id)
+        {
+            SetAuthHeader();
+            var res = await _http.GetAsync($"api/v1/marceneiros/{id}");
+            if (!res.IsSuccessStatusCode) return null;
+            var json = await res.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<MarceneiroDetalheViewModel>(json, _json);
+        }
+
+        public async Task<(bool ok, string? erro)> AvaliarMarceneiroAsync(int id, int nota, string comentario, int? projetoId = null)
+        {
+            SetAuthHeader();
+            var body = JsonSerializer.Serialize(new { nota, comentario, projetoId });
+            var res = await _http.PostAsync($"api/v1/marceneiros/{id}/avaliacoes",
+                new StringContent(body, Encoding.UTF8, "application/json"));
+            if (!res.IsSuccessStatusCode)
+                return (false, await res.Content.ReadAsStringAsync());
+            return (true, null);
+        }
+
+        // ?? ADMIN ?????????????????????????????????????????????????
+        public async Task<AdminDashboardViewModel?> ObterAdminDashboardAsync()
+        {
+            SetAuthHeader();
+            var res = await _http.GetAsync("api/v1/admin/dashboard");
+            if (!res.IsSuccessStatusCode) return null;
+            var json = await res.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<AdminDashboardViewModel>(json, _json);
         }
     }
 
@@ -138,6 +240,8 @@ namespace PosCorte.Web.Services
         public string CepObra { get; set; } = string.Empty;
         public string EnderecoCompleto { get; set; } = string.Empty;
         public string StatusProjeto { get; set; } = string.Empty;
+        public DateTime? DataLimiteVistoria { get; set; }
+        public string? MotivoDisputa { get; set; }
     }
 
     public class CriarProjetoInput
@@ -159,6 +263,34 @@ namespace PosCorte.Web.Services
         public decimal TaxaPlataforma { get; set; }
     }
 
+    public class GerarPixViewModel
+    {
+        public int PagamentoId { get; set; }
+        public int ProjetoId { get; set; }
+        public string Modo { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public decimal ValorTotal { get; set; }
+        public decimal ValorMarceneiro { get; set; }
+        public decimal ValorPlataforma { get; set; }
+        public string? PixCopiaECola { get; set; }
+        public string? QrCodeBase64 { get; set; }
+        public string? InvoiceUrl { get; set; }
+        public DateTime? ExpiraEm { get; set; }
+        public bool GatewayConfigurado { get; set; }
+        public string? Aviso { get; set; }
+    }
+
+    public class PagamentoStatusViewModel
+    {
+        public int PagamentoId { get; set; }
+        public int ProjetoId { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public string Modo { get; set; } = string.Empty;
+        public decimal ValorTotal { get; set; }
+        public DateTime? DataConfirmacao { get; set; }
+        public string StatusProjeto { get; set; } = string.Empty;
+    }
+
     public class OrdemViewModel
     {
         public int Id { get; set; }
@@ -168,5 +300,64 @@ namespace PosCorte.Web.Services
         public string MontadorNome { get; set; } = string.Empty;
         public string MontadorTelefone { get; set; } = string.Empty;
         public DateTime DataAtualizacao { get; set; }
+    }
+
+    public class MarceneiroViewModel
+    {
+        public int Id { get; set; }
+        public string Nome { get; set; } = string.Empty;
+        public string Telefone { get; set; } = string.Empty;
+        public string FotoUrl { get; set; } = string.Empty;
+        public string Cidade { get; set; } = string.Empty;
+        public string Estado { get; set; } = string.Empty;
+        public string Bairro { get; set; } = string.Empty;
+        public List<string> Especialidades { get; set; } = new();
+        public string Bio { get; set; } = string.Empty;
+        public decimal NotaMedia { get; set; }
+        public int TotalAvaliacoes { get; set; }
+        public int TotalServicos { get; set; }
+        public bool Disponivel { get; set; }
+        public bool Verificado { get; set; }
+    }
+
+    public class MarceneiroDetalheViewModel : MarceneiroViewModel
+    {
+        public List<AvaliacaoViewModel> Avaliacoes { get; set; } = new();
+    }
+
+    public class AvaliacaoViewModel
+    {
+        public int Id { get; set; }
+        public int MarceneiroId { get; set; }
+        public int? ProjetoId { get; set; }
+        public string AutorNome { get; set; } = string.Empty;
+        public int Nota { get; set; }
+        public string Comentario { get; set; } = string.Empty;
+        public DateTime DataCriacao { get; set; }
+    }
+
+    public class AdminDashboardViewModel
+    {
+        public int TotalArquitetos { get; set; }
+        public int TotalMarceneiros { get; set; }
+        public int TotalProjetos { get; set; }
+        public int TotalOrdens { get; set; }
+        public decimal ReceitaPlataformaEstimada { get; set; }
+        public decimal VolumeTransacionadoEstimado { get; set; }
+        public string GatewayPagamento { get; set; } = string.Empty;
+        public string StatusEscrow { get; set; } = string.Empty;
+        public Dictionary<string, int> ProjetosPorStatus { get; set; } = new();
+        public List<ProjetoResumoAdminViewModel> ProjetosRecentes { get; set; } = new();
+    }
+
+    public class ProjetoResumoAdminViewModel
+    {
+        public int Id { get; set; }
+        public string NomeProjeto { get; set; } = string.Empty;
+        public string StatusProjeto { get; set; } = string.Empty;
+        public string ArquitetoNome { get; set; } = string.Empty;
+        public decimal ValorEstimado { get; set; }
+        public decimal MargemEstimada { get; set; }
+        public string? MontadorNome { get; set; }
     }
 }

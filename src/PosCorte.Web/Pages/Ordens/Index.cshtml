@@ -1,0 +1,49 @@
+@page
+@model PosCorte.Web.Pages.Ordens.IndexModel
+@using PosCorte.Web.Services
+@{
+    ViewData["Title"] = "Ordens de serviço";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <span class="pc-eyebrow">Operação de campo</span>
+        <h1 class="h3 fw-bold mb-0 mt-1">Ordens de serviço</h1>
+        <p class="text-muted">Acompanhe os montadores alocados às suas montagens.</p>
+    </div>
+
+    <div class="pc-card">
+        @if (!Model.Ordens.Any())
+        {
+            <div class="pc-empty">
+                <div class="icon"><i class="bi bi-truck"></i></div>
+                <p class="mt-2 mb-0">Nenhuma ordem de serviço ainda.</p>
+                <p class="small text-muted">As ordens são criadas automaticamente após a confirmação do pagamento (PIX em Escrow).</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="pc-table">
+                    <thead>
+                        <tr><th>Projeto</th><th>Montador</th><th>Telefone</th><th>Agendamento</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var o in Model.Ordens)
+                        {
+                            var (css, label) = UiHelper.StatusProvedor(o.StatusProvedor);
+                            var nome = Model.NomesProjetos.TryGetValue(o.ProjetoId, out var n) ? n : $"Projeto #{o.ProjetoId}";
+                            <tr>
+                                <td class="fw-semibold">@nome</td>
+                                <td>@(string.IsNullOrEmpty(o.MontadorNome) ? "Aguardando alocação" : o.MontadorNome)</td>
+                                <td class="text-muted">@(string.IsNullOrEmpty(o.MontadorTelefone) ? "—" : o.MontadorTelefone)</td>
+                                <td class="text-muted">@(o.DataAtualizacao == default ? "—" : o.DataAtualizacao.ToLocalTime().ToString("dd/MM/yyyy HH:mm"))</td>
+                                <td><span class="pc-status @css">@label</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

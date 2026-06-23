@@ -5,6 +5,9 @@
 *.sln.docstates
 *.userprefs
 
+# Run logs (Tee-Object output)
+*.log
+
 # Build outputs
 [Dd]ebug/
 [Rr]elease/

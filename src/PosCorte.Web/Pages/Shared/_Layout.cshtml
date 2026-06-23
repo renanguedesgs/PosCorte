@@ -1,52 +1,114 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PosCorte.Web</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] · PósCorte</title>
+    <link rel="icon" type="image/png" href="~/favicon.png" asp-append-version="true" />
+    <link rel="apple-touch-icon" href="~/images/poscorte-icon.png" asp-append-version="true" />
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="description" content="PósCorte — a única plataforma que resolve a montagem de móveis planejados no momento pós-corte: orçamento instantâneo, pagamento seguro em escrow e montador homologado em até 24h." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/PosCorte.Web.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Head", required: false)
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-lg pc-navbar">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">PosCorte.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                @{
+                    ViewData["BrandExtraClass"] = "navbar-brand";
+                    ViewData["BrandFooter"] = false;
+                    ViewData["BrandAuth"] = false;
+                    ViewData["BrandLink"] = true;
+                }
+                <partial name="_Brand" />
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
-                    </ul>
+                <div class="collapse navbar-collapse" id="navMain">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <ul class="navbar-nav me-auto ms-lg-4">
+                                <li class="nav-item"><a class="nav-link" asp-page="/Admin/Index"><i class="bi bi-speedometer2 me-1"></i>Painel Admin</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-page="/Admin/Financeiro"><i class="bi bi-cash-stack me-1"></i>Financeiro</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-page="/Admin/Projetos"><i class="bi bi-folder me-1"></i>Projetos</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-page="/Admin/Marceneiros"><i class="bi bi-person-badge me-1"></i>Rede de marceneiros</a></li>
+                            </ul>
+                        }
+                        else
+                        {
+                            <ul class="navbar-nav me-auto ms-lg-4">
+                                <li class="nav-item"><a class="nav-link" asp-page="/Dashboard"><i class="bi bi-grid-1x2 me-1"></i>Dashboard</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-page="/Projetos/Index"><i class="bi bi-folder me-1"></i>Projetos</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-page="/Ordens/Index"><i class="bi bi-truck me-1"></i>Ordens</a></li>
+                            </ul>
+                            <a class="btn btn-pc-primary btn-sm me-3" asp-page="/Projetos/Criar"><i class="bi bi-plus-lg me-1"></i>Novo projeto</a>
+                        }
+                        <div class="d-flex align-items-center gap-3 ms-auto">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <span class="badge bg-dark">Admin</span>
+                            }
+                            <div class="dropdown">
+                                <a class="d-flex align-items-center gap-2 text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" role="button">
+                                    <span class="pc-avatar">@(User.Identity!.Name?.Substring(0, 1).ToUpper() ?? "U")</span>
+                                    <span class="d-none d-lg-inline fw-semibold text-dark">@(User.Identity!.Name ?? "Conta")</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                    <li><span class="dropdown-item-text small text-muted">@User.FindFirstValue(ClaimTypes.Email)</span></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" asp-page="/Auth/Logout" class="m-0">
+                                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Sair</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <ul class="navbar-nav me-auto ms-lg-4">
+                            <li class="nav-item"><a class="nav-link" href="/#como-funciona">Como funciona</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/#precos">Preços</a></li>
+                        </ul>
+                        <div class="d-flex align-items-center gap-2">
+                            <a class="btn btn-pc-ghost btn-sm" asp-page="/Auth/Login">Entrar</a>
+                            <a class="btn btn-pc-primary btn-sm" asp-page="/Auth/Register">Criar conta grátis</a>
+                        </div>
+                    }
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - PosCorte.Web - <a asp-area="" asp-page="/Privacy">Privacy</a>
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <footer class="pc-footer">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            @{
+                ViewData["BrandExtraClass"] = "";
+                ViewData["BrandFooter"] = true;
+                ViewData["BrandLink"] = false;
+            }
+            <partial name="_Brand" />
+            <div class="small">© 2026 PósCorte · Montagem de móveis planejados com garantia · São Paulo</div>
         </div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

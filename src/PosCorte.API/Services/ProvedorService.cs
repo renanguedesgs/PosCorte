@@ -17,17 +17,35 @@ namespace PosCorte.API.Services
         private readonly IProvedorApi _provedorApi;
         private readonly ILogger<ProvedorService> _logger;
 
-        public ProvedorService(IProvedorApi provedorApi, ILogger<ProvedorService> logger)
+        public bool EstaConfigurado { get; }
+
+        public ProvedorService(IProvedorApi provedorApi, ILogger<ProvedorService> logger, IConfiguration config)
         {
             _provedorApi = provedorApi;
             _logger = logger;
+
+            var baseUrl = config["ProvedorApi:BaseUrl"];
+            var apiKey = config["ProvedorApi:ApiKey"];
+            var habilitado = config.GetValue<bool>("ProvedorApi:Enabled");
+
+            // Só considera configurado quando o parceiro real está plugado:
+            // habilitado + chave preenchida + BaseUrl que não seja o placeholder.
+            EstaConfigurado =
+                habilitado
+                && !string.IsNullOrWhiteSpace(apiKey)
+                && !string.IsNullOrWhiteSpace(baseUrl)
+                && !baseUrl.Contains("api.provider.com", StringComparison.OrdinalIgnoreCase)
+                && !baseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase);
+
+            if (!EstaConfigurado)
+                _logger.LogWarning("Provedor de marceneiros NÃO configurado. Preencha ProvedorApi:BaseUrl, ProvedorApi:ApiKey e ProvedorApi:Enabled=true para alocar montadores reais.");
         }
 
         public async Task<ProvedorResponse> CriarOrdemServicoAsync(ProvedorRequest request)
         {
             try
             {
-                _logger.LogInformation("Criando ordem de servi�o para: {Endereco}", request.EnderecoCompleto);
+                _logger.LogInformation("Criando ordem de serviзo para: {Endereco}", request.EnderecoCompleto);
 
                 var resposta = await _provedorApi.CriarOrdemServico(request);
 
@@ -38,7 +56,7 @@ namespace PosCorte.API.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao criar ordem no provedor");
-                throw new InvalidOperationException("Falha na comunica��o com provedor de montadores", ex);
+                throw new InvalidOperationException("Falha na comunicaзгo com provedor de montadores", ex);
             }
         }
 
