@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PósCorte — Montagem de móveis planejados com garantia</title>
   <meta name="description" content="Orçamento de montagem em 30 segundos, pagamento em escrow e montador homologado. Depois do corte do MDF, o PósCorte resolve." />
+  <link rel="canonical" href="https://pos-corte.vercel.app/" />
+  <meta property="og:url" content="https://pos-corte.vercel.app/" />
+  <meta property="og:title" content="PósCorte — Montagem pós-corte com garantia" />
   <meta name="theme-color" content="#4f46e5" />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,6 +33,13 @@
       </div>
     </nav>
   </header>
+
+  <div id="app-banner" class="d-none border-bottom" style="background:#fef3c7">
+    <div class="container py-2 small text-center">
+      <i class="bi bi-info-circle me-1"></i>
+      <strong>Piloto aberto.</strong> Para criar conta e subir projeto, fale no WhatsApp ou aguarde o app completo (em configuração).
+    </div>
+  </div>
 
   <main>
     <section class="pc-hero">
@@ -145,15 +155,19 @@
 
       function resolveAppLinks() {
         var base = window.POSCORTE_APP_URL || '';
+        var wa = window.POSCORTE_WHATSAPP || '';
+        if (!base && !wa) {
+          var banner = document.getElementById('app-banner');
+          if (banner) banner.classList.remove('d-none');
+        }
         document.querySelectorAll('[data-app-path]').forEach(function (el) {
           var path = el.getAttribute('data-app-path');
           if (base) {
             el.href = base + path;
             return;
           }
-          var wa = window.POSCORTE_WHATSAPP;
           if (wa) {
-            el.href = 'https://wa.me/' + wa.replace(/\D/g, '') + '?text=' + encodeURIComponent('Oi! Quero testar o PósCorte para montagem pós-corte.');
+            el.href = 'https://wa.me/' + wa.replace(/\D/g, '') + '?text=' + encodeURIComponent('Oi! Vi o pos-corte.vercel.app e quero testar o PósCorte para montagem pós-corte.');
             el.target = '_blank';
             el.rel = 'noopener';
           }

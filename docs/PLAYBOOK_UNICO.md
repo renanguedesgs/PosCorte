@@ -62,6 +62,7 @@ Use isso na conversa de vendas — **não é promessa, é demo**:
 | Item | Valor |
 |------|-------|
 | Web | http://localhost:5197 |
+| **Landing (produção)** | https://pos-corte.vercel.app |
 | API | http://localhost:5047 |
 | Admin | `admin@poscorte.com` / `Admin@PosCorte2026` |
 
@@ -221,7 +222,7 @@ Posso mandar o link no WhatsApp?"
 
 ### Fluxo quando arquiteto aceita
 
-1. Manda link: `https://poscorte.com.br` (ou localhost em dev)  
+1. Manda link: **https://pos-corte.vercel.app**  
 2. **Cadastra o arquiteto** em Admin → Arquitetos (ou ele se registra) — manda login/senha no WhatsApp  
 3. Projeto criado → mostra orçamento na tela  
 4. PIX pago (ou simulado em dev) → Admin → Projetos → **Operar** → aloca montador  
