@@ -1,0 +1,10 @@
+# Deploy do PosCorte.Web (app completo .NET)
+# No Railway: New Service → GitHub → Root Directory vazio → Dockerfile Path: docker/Dockerfile.web
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "docker/Dockerfile.web"
+
+[deploy]
+healthcheckPath = "/"
+restartPolicyType = "ON_FAILURE"

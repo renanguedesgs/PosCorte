@@ -1,0 +1,7 @@
+{
+  "name": "poscorte-vercel",
+  "private": true,
+  "scripts": {
+    "vercel-build": "node scripts/vercel-build.mjs"
+  }
+}

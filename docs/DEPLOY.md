@@ -13,6 +13,29 @@
 
 ---
 
+## 0. Vercel (landing — `pos-corte.vercel.app`)
+
+A **Vercel não roda ASP.NET**. O repositório inclui uma **landing estática** em `public/` que corrige o 404.
+
+### Deploy automático (já conectado ao GitHub)
+
+1. Faça push deste commit na branch `main`
+2. A Vercel roda `node scripts/vercel-build.mjs` e publica `public/`
+3. Abra `https://pos-corte.vercel.app` — deve mostrar a landing com estimador
+
+### Variáveis na Vercel (Settings → Environment Variables)
+
+| Variável | Para quê |
+|----------|----------|
+| `APP_WEB_URL` | URL do app .NET no Railway (ex. `https://poscorte-web.up.railway.app`) — botões Entrar/Cadastrar |
+| `CONTACT_WHATSAPP` | Opcional: `5511999998888` — fallback WhatsApp se `APP_WEB_URL` vazio |
+
+### App completo (login, admin, PIX)
+
+Hospede **API + Web no Railway** (seção abaixo). Depois aponte `APP_WEB_URL` na Vercel.
+
+---
+
 ## 1. Variáveis de ambiente (API)
 
 | Variável | Obrigatório | Exemplo |

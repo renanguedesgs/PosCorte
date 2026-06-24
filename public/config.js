@@ -1,0 +1,1 @@
+window.POSCORTE_APP_URL="";window.POSCORTE_WHATSAPP="";

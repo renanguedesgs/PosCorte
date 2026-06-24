@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PósCorte — Montagem de móveis planejados com garantia</title>
+  <meta name="description" content="Orçamento de montagem em 30 segundos, pagamento em escrow e montador homologado. Depois do corte do MDF, o PósCorte resolve." />
+  <meta name="theme-color" content="#4f46e5" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="/css/site.css" rel="stylesheet" />
+  <script src="/config.js"></script>
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg pc-navbar">
+      <div class="container">
+        <a class="navbar-brand pc-brand" href="/">
+          <img src="/images/poscorte-icon.png" alt="" class="pc-logo-img" onerror="this.style.display='none'" />
+          <span class="pc-brand-text">Pós<span class="accent">Corte</span></span>
+        </a>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <a class="btn btn-pc-ghost btn-sm" data-app-path="/Auth/Login" href="#">Entrar</a>
+          <a class="btn btn-pc-primary btn-sm" data-app-path="/Auth/Register" href="#">Criar conta</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="pc-hero">
+      <div class="container py-5">
+        <div class="row align-items-center g-5 py-lg-4">
+          <div class="col-lg-6">
+            <span class="badge-soft"><i class="bi bi-shield-check me-1"></i>Pagamento em ambiente seguro (Escrow)</span>
+            <h1 class="mt-4">O caminhão do MDF chegou. <span class="accent">Quem monta agora?</span></h1>
+            <p class="lead mt-3">
+              O PósCorte resolve o único momento que tira o sono do arquiteto: <strong>depois do corte</strong>.
+              Preço na hora, pagamento retido em escrow e montador homologado em até 24h.
+            </p>
+            <div class="d-flex flex-wrap gap-3 mt-4">
+              <a class="btn btn-pc-accent btn-lg" data-app-path="/Auth/Register" href="#">Subir meu projeto <i class="bi bi-arrow-right ms-1"></i></a>
+              <a href="#como-funciona" class="btn btn-pc-ghost btn-lg" style="color:#fff;border-color:rgba(255,255,255,.25)">Ver como funciona</a>
+            </div>
+            <div class="pc-hero-trust mt-4">
+              <span class="item"><i class="bi bi-check-circle-fill"></i> Orçamento em 30 segundos</span>
+              <span class="item"><i class="bi bi-check-circle-fill"></i> Montador homologado</span>
+              <span class="item"><i class="bi bi-check-circle-fill"></i> Dinheiro só sai após o serviço</span>
+            </div>
+          </div>
+          <div class="col-lg-5 offset-lg-1">
+            <div class="pc-hero-card" id="estimador">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-white-50 small fw-semibold text-uppercase">Simule seu orçamento</span>
+                <i class="bi bi-lightning-charge-fill text-warning"></i>
+              </div>
+              <label class="d-flex justify-content-between text-white small mb-1">
+                <span>Peças cortadas</span><span class="fw-bold" id="estPecasVal">32</span>
+              </label>
+              <input type="range" class="form-range mb-3" min="1" max="120" value="32" id="estPecas" style="accent-color:#f59e0b">
+              <label class="d-flex justify-content-between text-white small mb-1">
+                <span>Gavetas</span><span class="fw-bold" id="estGavetasVal">8</span>
+              </label>
+              <input type="range" class="form-range mb-3" min="0" max="40" value="8" id="estGavetas" style="accent-color:#f59e0b">
+              <div class="bg-white rounded-3 p-3 text-dark mb-3">
+                <div class="d-flex justify-content-between small"><span class="text-muted">Mão de obra</span><span class="fw-semibold" id="estMaoObra">R$ 720,00</span></div>
+                <div class="d-flex justify-content-between small"><span class="text-muted">Taxa PósCorte (segurança)</span><span class="fw-semibold" id="estTaxa">R$ 180,00</span></div>
+                <hr class="my-2" />
+                <div class="d-flex justify-content-between align-items-end">
+                  <span class="text-muted">Você paga</span>
+                  <span class="fw-bold fs-3 text-primary" id="estTotal">R$ 900,00</span>
+                </div>
+              </div>
+              <a class="btn btn-pc-primary w-100" data-app-path="/Auth/Register" href="#">Despachar esta montagem <i class="bi bi-arrow-right ms-1"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container pc-section-sm">
+      <div class="pc-trustbar">
+        <span class="item"><i class="bi bi-shield-lock-fill"></i> Escrow</span>
+        <span class="item"><i class="bi bi-patch-check-fill"></i> Montador homologado</span>
+        <span class="item"><i class="bi bi-lightning-charge-fill"></i> Preço instantâneo</span>
+        <span class="item"><i class="bi bi-geo-alt-fill"></i> Grande São Paulo</span>
+      </div>
+    </section>
+
+    <section class="container pc-section" id="como-funciona">
+      <div class="text-center mb-5">
+        <span class="pc-eyebrow">Como funciona</span>
+        <h2 class="pc-section-title mt-2">Do corte à montagem sem pânico</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-4"><div class="pc-card h-100"><div class="pc-card-body"><h5 class="fw-bold">1. Crie o projeto</h5><p class="text-muted mb-0">Informe peças, gavetas e endereço da obra.</p></div></div></div>
+        <div class="col-md-4"><div class="pc-card h-100"><div class="pc-card-body"><h5 class="fw-bold">2. Pague com PIX</h5><p class="text-muted mb-0">Valor retido em escrow até a montagem terminar.</p></div></div></div>
+        <div class="col-md-4"><div class="pc-card h-100"><div class="pc-card-body"><h5 class="fw-bold">3. Montador alocado</h5><p class="text-muted mb-0">Homologado na rede PósCorte — você acompanha na plataforma.</p></div></div></div>
+      </div>
+    </section>
+
+    <section class="container pc-section">
+      <div class="pc-cta-band text-center">
+        <h2 class="fw-bold mb-2" style="position:relative;z-index:1">Pronto para nunca mais caçar montador?</h2>
+        <p class="mb-4 opacity-75" style="position:relative;z-index:1">Primeiros projetos piloto com taxa zero da plataforma.</p>
+        <a class="btn btn-pc-accent btn-lg" data-app-path="/Auth/Register" href="#" style="position:relative;z-index:1">Criar conta grátis <i class="bi bi-arrow-right ms-1"></i></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pc-footer">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+      <span class="pc-brand pc-brand--footer"><span class="pc-brand-text">Pós<span class="accent">Corte</span></span></span>
+      <div class="d-flex flex-wrap align-items-center gap-3 small">
+        <a href="/legal/termos" class="text-muted text-decoration-none">Termos</a>
+        <a href="/legal/privacidade" class="text-muted text-decoration-none">Privacidade</a>
+        <span class="text-muted">© 2026 PósCorte · São Paulo</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var P = 12.5, G = 40, MARKUP = 0.2;
+      var pecas = document.getElementById('estPecas');
+      var gavetas = document.getElementById('estGavetas');
+      var fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+      function calc() {
+        var qp = +pecas.value, qg = +gavetas.value;
+        var mao = qp * P + qg * G;
+        var total = mao / (1 - MARKUP);
+        document.getElementById('estPecasVal').textContent = qp;
+        document.getElementById('estGavetasVal').textContent = qg;
+        document.getElementById('estMaoObra').textContent = fmt.format(mao);
+        document.getElementById('estTaxa').textContent = fmt.format(total - mao);
+        document.getElementById('estTotal').textContent = fmt.format(total);
+      }
+      pecas.addEventListener('input', calc);
+      gavetas.addEventListener('input', calc);
+      calc();
+
+      function resolveAppLinks() {
+        var base = window.POSCORTE_APP_URL || '';
+        document.querySelectorAll('[data-app-path]').forEach(function (el) {
+          var path = el.getAttribute('data-app-path');
+          if (base) {
+            el.href = base + path;
+            return;
+          }
+          var wa = window.POSCORTE_WHATSAPP;
+          if (wa) {
+            el.href = 'https://wa.me/' + wa.replace(/\D/g, '') + '?text=' + encodeURIComponent('Oi! Quero testar o PósCorte para montagem pós-corte.');
+            el.target = '_blank';
+            el.rel = 'noopener';
+          }
+        });
+      }
+      resolveAppLinks();
+    })();
+  </script>
+</body>
+</html>
