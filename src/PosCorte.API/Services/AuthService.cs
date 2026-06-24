@@ -53,6 +53,24 @@ namespace PosCorte.API.Services
             return true;
         }
 
+        public async Task<(bool ok, string? erro)> AlterarSenhaAsync(int usuarioId, string senhaAtual, string senhaNova)
+        {
+            if (string.IsNullOrWhiteSpace(senhaNova) || senhaNova.Length < 6)
+                return (false, "A nova senha deve ter pelo menos 6 caracteres.");
+
+            var usuario = await _context.Usuarios.FindAsync(usuarioId);
+            if (usuario == null || !usuario.Ativo)
+                return (false, "Usuário não encontrado.");
+
+            if (!BCrypt.Net.BCrypt.Verify(senhaAtual, usuario.SenhaHash))
+                return (false, "Senha atual incorreta.");
+
+            usuario.SenhaHash = BCrypt.Net.BCrypt.HashPassword(senhaNova);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Senha alterada para usuário {Id}", usuarioId);
+            return (true, null);
+        }
+
         private string GerarToken(Usuario usuario)
         {
             var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key não configurada.");

@@ -31,14 +31,17 @@ builder.Services.AddAsaasClient(builder.Configuration);
 builder.Services.AddScoped<INotificacaoService, NotificacaoService>();
 builder.Services.AddHostedService<LiquidacaoBackgroundService>();
 
-// ===== MARCENEIROS (listagem/avalia??es; aloca??o vem do provedor externo) =====
+// ===== OPERAÃ‡ÃƒO MANUAL (cadastro arquiteto/montador + alocaÃ§Ã£o) =====
+builder.Services.AddScoped<IOperacaoManualService, OperacaoManualService>();
+
+// ===== MARCENEIROS =====
 builder.Services.AddScoped<IMarceneiroService, PosCorte.API.Services.Marceneiros.MarceneiroService>();
 
 // ===== AUTH SERVICE =====
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // ===== JWT AUTHENTICATION =====
-var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key n˜o configurado");
+var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key nï¿½o configurado");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -59,10 +62,10 @@ builder.Services.AddAuthorization();
 builder.Services.AddDbContext<PosCorteDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Reposit˜rios com EF Core
+// Repositï¿½rios com EF Core
 builder.Services.AddScoped(typeof(IRepositorio<>), typeof(RepositorioEF<>));
 
-// Refit HTTP Client para integra˜˜o com Provedor externo
+// Refit HTTP Client para integraï¿½ï¿½o com Provedor externo
 builder.Services.AddRefitClient<IProvedorApi>()
     .ConfigureHttpClient(c =>
     {
@@ -84,31 +87,44 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        Title = "P˜sCorte API",
+        Title = "Pï¿½sCorte API",
         Version = "v1",
-        Description = "API de intermedia˜˜o de servi˜os de montagem de m˜veis planejados",
+        Description = "API de intermediaï¿½ï¿½o de serviï¿½os de montagem de mï¿½veis planejados",
         Contact = new Microsoft.OpenApi.Models.OpenApiContact
         {
-            Name = "P˜sCorte",
+            Name = "Pï¿½sCorte",
             Url = new Uri("https://poscorte.com")
         }
     });
 });
 
 // ===== CORS =====
+var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()?
+    .Where(o => !string.IsNullOrWhiteSpace(o)).ToArray() ?? Array.Empty<string>();
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AppCors", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        if (corsOrigins.Length > 0)
+        {
+            policy.WithOrigins(corsOrigins)
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();
+        }
+        else
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
     });
 });
 
 var app = builder.Build();
 
-// ===== MIGRATIONS AUTOM˜TICAS =====
+// ===== MIGRATIONS AUTOMï¿½TICAS =====
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<PosCorteDbContext>();
@@ -129,13 +145,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "P˜sCorte API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pï¿½sCorte API v1");
         c.RoutePrefix = string.Empty;
     });
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
+app.UseCors("AppCors");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

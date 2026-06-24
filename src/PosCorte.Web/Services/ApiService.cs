@@ -35,7 +35,7 @@ namespace PosCorte.Web.Services
                 new StringContent(body, Encoding.UTF8, "application/json"));
 
             if (!res.IsSuccessStatusCode)
-                return (false, null, "Email ou senha invùlidos");
+                return (false, null, "Email ou senha invÔøΩlidos");
 
             var json = await res.Content.ReadAsStringAsync();
             var obj = JsonSerializer.Deserialize<JsonElement>(json);
@@ -51,12 +51,12 @@ namespace PosCorte.Web.Services
             if (!res.IsSuccessStatusCode)
             {
                 var err = await res.Content.ReadAsStringAsync();
-                return (false, "Email jù cadastrado");
+                return (false, "Email jÔøΩ cadastrado");
             }
             return (true, null);
         }
 
-        // ?? USUùRIOS ?????????????????????????????????????????????
+        // ?? USUÔøΩRIOS ?????????????????????????????????????????????
         public async Task<List<UsuarioViewModel>> ListarUsuariosAsync()
         {
             SetAuthHeader();
@@ -174,13 +174,14 @@ namespace PosCorte.Web.Services
         }
 
         // ?? MARCENEIROS ??????????????????????????????????????????
-        public async Task<List<MarceneiroViewModel>> ListarMarceneirosAsync(string? cidade = null, string? especialidade = null, decimal? notaMin = null)
+        public async Task<List<MarceneiroViewModel>> ListarMarceneirosAsync(string? cidade = null, string? especialidade = null, decimal? notaMin = null, bool? disponivel = null)
         {
             SetAuthHeader();
             var qs = new List<string>();
             if (!string.IsNullOrWhiteSpace(cidade)) qs.Add($"cidade={Uri.EscapeDataString(cidade)}");
             if (!string.IsNullOrWhiteSpace(especialidade)) qs.Add($"especialidade={Uri.EscapeDataString(especialidade)}");
             if (notaMin.HasValue) qs.Add($"notaMin={notaMin.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            if (disponivel.HasValue) qs.Add($"disponivel={disponivel.Value.ToString().ToLowerInvariant()}");
             var query = qs.Count > 0 ? "?" + string.Join("&", qs) : "";
 
             var res = await _http.GetAsync($"api/v1/marceneiros{query}");
@@ -217,6 +218,78 @@ namespace PosCorte.Web.Services
             if (!res.IsSuccessStatusCode) return null;
             var json = await res.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<AdminDashboardViewModel>(json, _json);
+        }
+
+        public async Task<List<ArquitetoAdminViewModel>> ListarArquitetosAdminAsync()
+        {
+            SetAuthHeader();
+            var res = await _http.GetAsync("api/v1/admin/arquitetos");
+            if (!res.IsSuccessStatusCode) return new();
+            var json = await res.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<List<ArquitetoAdminViewModel>>(json, _json) ?? new();
+        }
+
+        public async Task<(bool ok, string? erro, CreateArquitetoAdminResponseViewModel? data)> CadastrarArquitetoAdminAsync(CreateArquitetoAdminInput input)
+        {
+            SetAuthHeader();
+            var body = JsonSerializer.Serialize(input);
+            var res = await _http.PostAsync("api/v1/admin/arquitetos",
+                new StringContent(body, Encoding.UTF8, "application/json"));
+            var json = await res.Content.ReadAsStringAsync();
+            if (!res.IsSuccessStatusCode)
+                return (false, json, null);
+            return (true, null, JsonSerializer.Deserialize<CreateArquitetoAdminResponseViewModel>(json, _json));
+        }
+
+        public async Task<(bool ok, string? erro)> CadastrarMarceneiroAdminAsync(CreateMarceneiroAdminInput input)
+        {
+            SetAuthHeader();
+            var body = JsonSerializer.Serialize(input);
+            var res = await _http.PostAsync("api/v1/admin/marceneiros",
+                new StringContent(body, Encoding.UTF8, "application/json"));
+            if (!res.IsSuccessStatusCode)
+                return (false, await res.Content.ReadAsStringAsync());
+            return (true, null);
+        }
+
+        public async Task<ProjetoOperacaoAdminViewModel?> ObterProjetoOperacaoAdminAsync(int projetoId)
+        {
+            SetAuthHeader();
+            var res = await _http.GetAsync($"api/v1/admin/projetos/{projetoId}/operacao");
+            if (!res.IsSuccessStatusCode) return null;
+            var json = await res.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<ProjetoOperacaoAdminViewModel>(json, _json);
+        }
+
+        public async Task<(bool ok, string? erro)> AlocarMontadorAdminAsync(int projetoId, int marceneiroId, DateTime? dataAgendamento = null)
+        {
+            SetAuthHeader();
+            var body = JsonSerializer.Serialize(new { marceneiroId, dataAgendamento });
+            var res = await _http.PostAsync($"api/v1/admin/projetos/{projetoId}/alocar-montador",
+                new StringContent(body, Encoding.UTF8, "application/json"));
+            if (!res.IsSuccessStatusCode)
+                return (false, await res.Content.ReadAsStringAsync());
+            return (true, null);
+        }
+
+        public async Task<(bool ok, string? erro)> MarcarMontagemConcluidaAdminAsync(int projetoId)
+        {
+            SetAuthHeader();
+            var res = await _http.PostAsync($"api/v1/admin/projetos/{projetoId}/marcar-montagem-concluida", null);
+            if (!res.IsSuccessStatusCode)
+                return (false, await res.Content.ReadAsStringAsync());
+            return (true, null);
+        }
+
+        public async Task<(bool ok, string? erro)> AlterarSenhaAdminAsync(string senhaAtual, string senhaNova)
+        {
+            SetAuthHeader();
+            var body = JsonSerializer.Serialize(new { senhaAtual, senhaNova });
+            var res = await _http.PostAsync("api/v1/admin/conta/alterar-senha",
+                new StringContent(body, Encoding.UTF8, "application/json"));
+            if (!res.IsSuccessStatusCode)
+                return (false, await res.Content.ReadAsStringAsync());
+            return (true, null);
         }
     }
 
@@ -359,5 +432,74 @@ namespace PosCorte.Web.Services
         public decimal ValorEstimado { get; set; }
         public decimal MargemEstimada { get; set; }
         public string? MontadorNome { get; set; }
+    }
+
+    public class ArquitetoAdminViewModel
+    {
+        public int Id { get; set; }
+        public string Nome { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Telefone { get; set; } = string.Empty;
+        public string CpfCnpj { get; set; } = string.Empty;
+        public bool Ativo { get; set; }
+        public DateTime DataCadastro { get; set; }
+    }
+
+    public class CreateArquitetoAdminInput
+    {
+        public string Nome { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string CpfCnpj { get; set; } = string.Empty;
+        public string Telefone { get; set; } = string.Empty;
+        public string? Senha { get; set; }
+    }
+
+    public class CreateArquitetoAdminResponseViewModel
+    {
+        public ArquitetoAdminViewModel Arquiteto { get; set; } = new();
+        public string SenhaInicial { get; set; } = string.Empty;
+    }
+
+    public class CreateMarceneiroAdminInput
+    {
+        public string Nome { get; set; } = string.Empty;
+        public string Telefone { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Cidade { get; set; } = string.Empty;
+        public string Estado { get; set; } = "SP";
+        public string Bairro { get; set; } = string.Empty;
+        public string Cep { get; set; } = string.Empty;
+        public string Especialidades { get; set; } = string.Empty;
+        public string Bio { get; set; } = string.Empty;
+        public bool Verificado { get; set; } = true;
+        public bool Disponivel { get; set; } = true;
+    }
+
+    public class ProjetoOperacaoAdminViewModel
+    {
+        public ProjetoViewModel Projeto { get; set; } = new();
+        public string ArquitetoNome { get; set; } = string.Empty;
+        public string ArquitetoEmail { get; set; } = string.Empty;
+        public string ArquitetoTelefone { get; set; } = string.Empty;
+        public OrcamentoViewModel? Orcamento { get; set; }
+        public OrdemOperacaoAdminViewModel? Ordem { get; set; }
+        public PagamentoResumoAdminViewModel? Pagamento { get; set; }
+    }
+
+    public class OrdemOperacaoAdminViewModel
+    {
+        public int Id { get; set; }
+        public string StatusProvedor { get; set; } = string.Empty;
+        public string MontadorNome { get; set; } = string.Empty;
+        public string MontadorTelefone { get; set; } = string.Empty;
+        public DateTime DataAgendamento { get; set; }
+        public DateTime DataAtualizacao { get; set; }
+    }
+
+    public class PagamentoResumoAdminViewModel
+    {
+        public string Status { get; set; } = string.Empty;
+        public decimal ValorTotal { get; set; }
+        public decimal ValorMarceneiro { get; set; }
     }
 }

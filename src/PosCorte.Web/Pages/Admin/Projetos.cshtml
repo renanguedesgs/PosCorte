@@ -1,33 +1,34 @@
-@page
-@model PosCorte.Web.Pages.Admin.ProjetosModel
-@using PosCorte.Web.Services
-@{
-    ViewData["Title"] = "Todos os projetos";
-}
-
-<div class="container py-4">
-    <a asp-page="/Admin/Index" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Painel Admin</a>
-    <h1 class="h3 fw-bold mt-2 mb-4">Todos os projetos (@Model.Projetos.Count)</h1>
-
-    <div class="pc-card">
-        <div class="table-responsive">
-            <table class="pc-table">
-                <thead><tr><th>#</th><th>Projeto</th><th>Arquiteto (ID)</th><th>CEP</th><th>Peças/Gavetas</th><th>Status</th></tr></thead>
-                <tbody>
-                    @foreach (var p in Model.Projetos)
-                    {
-                        var (css, label) = UiHelper.StatusProjeto(p.StatusProjeto);
-                        <tr>
-                            <td>@p.Id</td>
-                            <td class="fw-semibold">@p.NomeProjeto</td>
-                            <td>Usuário #@p.UsuarioId</td>
-                            <td>@p.CepObra</td>
-                            <td>@p.QtdPecas / @p.QtdGavetas</td>
-                            <td><span class="pc-status @css">@label</span></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+@page
+@model PosCorte.Web.Pages.Admin.ProjetosModel
+@using PosCorte.Web.Services
+@{
+    ViewData["Title"] = "Todos os projetos";
+}
+
+<div class="container py-4">
+    <a asp-page="/Admin/Index" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Painel Admin</a>
+    <h1 class="h3 fw-bold mt-2 mb-4">Todos os projetos (@Model.Projetos.Count)</h1>
+
+    <div class="pc-card">
+        <div class="table-responsive">
+            <table class="pc-table">
+                <thead><tr><th>#</th><th>Projeto</th><th>Arquiteto (ID)</th><th>CEP</th><th>Peças/Gavetas</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var p in Model.Projetos)
+                    {
+                        var (css, label) = UiHelper.StatusProjeto(p.StatusProjeto);
+                        <tr>
+                            <td>@p.Id</td>
+                            <td class="fw-semibold">@p.NomeProjeto</td>
+                            <td>Usuário #@p.UsuarioId</td>
+                            <td>@p.CepObra</td>
+                            <td>@p.QtdPecas / @p.QtdGavetas</td>
+                            <td><span class="pc-status @css">@label</span></td>
+                            <td><a asp-page="/Admin/Operar" asp-route-id="@p.Id" class="btn btn-pc-ghost btn-sm">Operar</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

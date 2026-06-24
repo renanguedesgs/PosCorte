@@ -1,0 +1,40 @@
+@page
+@model PosCorte.Web.Pages.Admin.ContaModel
+@{
+    ViewData["Title"] = "Minha conta";
+}
+
+<div class="container py-4" style="max-width:480px">
+    <a asp-page="/Admin/Index" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Painel Admin</a>
+    <h1 class="h3 fw-bold mt-2 mb-4">Trocar senha</h1>
+
+    @if (!string.IsNullOrEmpty(Model.Mensagem))
+    {
+        <div class="pc-alert pc-alert-success mb-3">@Model.Mensagem</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Erro))
+    {
+        <div class="pc-alert pc-alert-danger mb-3">@Model.Erro</div>
+    }
+
+    <div class="pc-card">
+        <div class="pc-card-body">
+            <p class="small text-muted">Faça isso no <strong>primeiro acesso em produção</strong> — não use a senha padrão de dev.</p>
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label">Senha atual</label>
+                    <input asp-for="SenhaAtual" type="password" class="form-control" required autocomplete="current-password" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nova senha</label>
+                    <input asp-for="SenhaNova" type="password" class="form-control" required minlength="6" autocomplete="new-password" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Confirmar nova senha</label>
+                    <input asp-for="SenhaNovaConfirmacao" type="password" class="form-control" required autocomplete="new-password" />
+                </div>
+                <button type="submit" class="btn btn-pc-primary w-100">Salvar nova senha</button>
+            </form>
+        </div>
+    </div>
+</div>

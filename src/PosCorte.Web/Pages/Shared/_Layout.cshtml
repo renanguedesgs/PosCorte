@@ -40,7 +40,8 @@
                                 <li class="nav-item"><a class="nav-link" asp-page="/Admin/Index"><i class="bi bi-speedometer2 me-1"></i>Painel Admin</a></li>
                                 <li class="nav-item"><a class="nav-link" asp-page="/Admin/Financeiro"><i class="bi bi-cash-stack me-1"></i>Financeiro</a></li>
                                 <li class="nav-item"><a class="nav-link" asp-page="/Admin/Projetos"><i class="bi bi-folder me-1"></i>Projetos</a></li>
-                                <li class="nav-item"><a class="nav-link" asp-page="/Admin/Marceneiros"><i class="bi bi-person-badge me-1"></i>Rede de marceneiros</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-page="/Admin/Arquitetos"><i class="bi bi-people me-1"></i>Arquitetos</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-page="/Admin/Marceneiros"><i class="bi bi-person-badge me-1"></i>Montadores</a></li>
                             </ul>
                         }
                         else
@@ -64,6 +65,7 @@
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                                     <li><span class="dropdown-item-text small text-muted">@User.FindFirstValue(ClaimTypes.Email)</span></li>
+                                    <li><a class="dropdown-item" asp-page="/Admin/Conta"><i class="bi bi-key me-2"></i>Trocar senha</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form method="post" asp-page="/Auth/Logout" class="m-0">
@@ -102,7 +104,11 @@
                 ViewData["BrandLink"] = false;
             }
             <partial name="_Brand" />
-            <div class="small">© 2026 PósCorte · Montagem de móveis planejados com garantia · São Paulo</div>
+            <div class="d-flex flex-wrap align-items-center gap-3 small">
+                <a asp-page="/Legal/Termos" class="text-muted text-decoration-none">Termos</a>
+                <a asp-page="/Legal/Privacidade" class="text-muted text-decoration-none">Privacidade</a>
+                <span class="text-muted">© 2026 PósCorte · São Paulo</span>
+            </div>
         </div>
     </footer>
 

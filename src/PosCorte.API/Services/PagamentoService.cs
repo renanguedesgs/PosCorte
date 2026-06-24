@@ -20,7 +20,7 @@ namespace PosCorte.API.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly IWebHostEnvironment _env;
 
-        // Resoluùùo tardia evita o ciclo PagamentoService <-> PagamentoConfirmacaoService.
+        // ResoluÔøΩÔøΩo tardia evita o ciclo PagamentoService <-> PagamentoConfirmacaoService.
         private IPagamentoConfirmacaoService Confirmacao => _serviceProvider.GetRequiredService<IPagamentoConfirmacaoService>();
 
         public PagamentoService(
@@ -50,7 +50,7 @@ namespace PosCorte.API.Services
             if (projeto == null) return null;
             if (projeto.UsuarioId != usuarioId) return null;
             if (projeto.StatusProjeto != "Aguardando_Pagamento")
-                throw new InvalidOperationException("Projeto nùo estù aguardando pagamento.");
+                throw new InvalidOperationException("Projeto nÔøΩo estÔøΩ aguardando pagamento.");
 
             var pendente = await _db.Pagamentos
                 .Where(p => p.ProjetoId == projetoId && p.Status == "Aguardando_Pix")
@@ -88,17 +88,17 @@ namespace PosCorte.API.Services
             _db.Pagamentos.Add(pagamento);
             await _db.SaveChangesAsync();
 
-            _logger.LogWarning("PIX STUB gerado para projeto {ProjetoId}. Nenhum valor real serù cobrado.", projeto.Id);
+            _logger.LogWarning("PIX STUB gerado para projeto {ProjetoId}. Nenhum valor real serÔøΩ cobrado.", projeto.Id);
 
             var dto = MapGerarPix(pagamento);
-            dto.Aviso = "Gateway Asaas nùo configurado. Cobranùa simulada ù use 'Simular pagamento' apenas em desenvolvimento.";
+            dto.Aviso = "Gateway Asaas nÔøΩo configurado. CobranÔøΩa simulada ÔøΩ use 'Simular pagamento' apenas em desenvolvimento.";
             return dto;
         }
 
         private async Task<GerarPixResponseDTO> GerarPixAsaasAsync(Projeto projeto, int usuarioId, OrcamentoResultado orc)
         {
             var usuario = await _db.Usuarios.FindAsync(usuarioId)
-                ?? throw new InvalidOperationException("Usuùrio nùo encontrado.");
+                ?? throw new InvalidOperationException("UsuÔøΩrio nÔøΩo encontrado.");
 
             var customer = await _asaasClient.CriarOuObterClienteAsync(new AsaasCustomerRequest
             {
@@ -116,7 +116,7 @@ namespace PosCorte.API.Services
                 BillingType = "PIX",
                 Value = orc.ValorTotal,
                 DueDate = dueDate,
-                Description = $"Montagem PùsCorte ù {projeto.NomeProjeto}",
+                Description = $"Montagem PÔøΩsCorte ÔøΩ {projeto.NomeProjeto}",
                 ExternalReference = projeto.Id.ToString()
             });
 
@@ -177,7 +177,7 @@ namespace PosCorte.API.Services
         {
             if (!_env.IsDevelopment())
             {
-                _logger.LogWarning("Simulaùùo de pagamento bloqueada fora de Development.");
+                _logger.LogWarning("SimulaÔøΩÔøΩo de pagamento bloqueada fora de Development.");
                 return false;
             }
 
@@ -219,7 +219,7 @@ namespace PosCorte.API.Services
 
             if (pagamento == null)
             {
-                _logger.LogWarning("Webhook Asaas: pagamento {Id} nùo encontrado", payload.Payment.Id);
+                _logger.LogWarning("Webhook Asaas: pagamento {Id} nÔøΩo encontrado", payload.Payment.Id);
                 return false;
             }
 
@@ -238,7 +238,7 @@ namespace PosCorte.API.Services
             var pagamento = await _db.Pagamentos.FirstOrDefaultAsync(p => p.AsaasPaymentId == pixId);
             if (pagamento == null)
             {
-                _logger.LogWarning("Validar PIX: id {PixId} nùo encontrado", pixId);
+                _logger.LogWarning("Validar PIX: id {PixId} nÔøΩo encontrado", pixId);
                 return false;
             }
 
@@ -286,9 +286,9 @@ namespace PosCorte.API.Services
                 DataConclusao = _asaas.EstaConfigurado ? null : DateTime.UtcNow
             };
 
-            // TODO: quando Asaas configurado, chamar API de split/transferùncia aqui.
+            // TODO: quando Asaas configurado, chamar API de split/transferÔøΩncia aqui.
             if (_asaas.EstaConfigurado)
-                _logger.LogInformation("Liquidaùùo registrada (split Asaas pendente de implementaùùo) para {PixId}", pixId);
+                _logger.LogInformation("LiquidaÔøΩÔøΩo registrada (split Asaas pendente de implementaÔøΩÔøΩo) para {PixId}", pixId);
 
             pagamento.Status = "Liquidado";
             _db.Liquidacoes.Add(liquidacao);

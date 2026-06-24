@@ -1,0 +1,134 @@
+@page "{id:int}"
+@model PosCorte.Web.Pages.Admin.OperarModel
+@using PosCorte.Web.Services
+@{
+    ViewData["Title"] = "Operar projeto";
+    var pt = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+    var p = Model.Operacao!.Projeto;
+    var (css, label) = UiHelper.StatusProjeto(p.StatusProjeto);
+}
+
+<div class="container py-4">
+    <a asp-page="/Admin/Projetos" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Todos os projetos</a>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mt-2 mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1">@p.NomeProjeto</h1>
+            <span class="pc-status @css">@label</span>
+            <span class="text-muted small ms-2">Projeto #@p.Id</span>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Mensagem))
+    {
+        <div class="pc-alert pc-alert-success mb-3"><i class="bi bi-check-circle me-1"></i>@Model.Mensagem</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Erro))
+    {
+        <div class="pc-alert pc-alert-danger mb-3">@Model.Erro</div>
+    }
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="pc-card h-100">
+                <div class="pc-card-body">
+                    <h5 class="fw-bold mb-3">Arquiteto</h5>
+                    <p class="mb-1"><strong>@Model.Operacao.ArquitetoNome</strong></p>
+                    <p class="mb-1 small text-muted">@Model.Operacao.ArquitetoEmail</p>
+                    <p class="mb-0 small">WhatsApp: @(string.IsNullOrEmpty(Model.Operacao.ArquitetoTelefone) ? "—" : Model.Operacao.ArquitetoTelefone)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="pc-card h-100">
+                <div class="pc-card-body">
+                    <h5 class="fw-bold mb-3">Obra</h5>
+                    <p class="mb-1 small">@p.EnderecoCompleto</p>
+                    <p class="mb-1 small text-muted">CEP @p.CepObra · @p.QtdPecas peças · @p.QtdGavetas gavetas</p>
+                    @if (!string.IsNullOrEmpty(p.UrlArquivoCorteCloud))
+                    {
+                        <a href="@p.UrlArquivoCorteCloud" target="_blank" rel="noopener" class="small">Abrir plano / link do corte →</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Operacao.Orcamento != null)
+    {
+        var o = Model.Operacao.Orcamento;
+        <div class="pc-card mb-4">
+            <div class="pc-card-body">
+                <h5 class="fw-bold mb-3">Valores</h5>
+                <div class="row g-3">
+                    <div class="col-4"><div class="pc-tile"><div class="tile-num">@o.ValorTotal.ToString("C", pt)</div><div class="tile-lbl">Total</div></div></div>
+                    <div class="col-4"><div class="pc-tile"><div class="tile-num">@o.CustoPrestador.ToString("C", pt)</div><div class="tile-lbl">Montador (80%)</div></div></div>
+                    <div class="col-4"><div class="pc-tile"><div class="tile-num text-success">@o.MargemLucro.ToString("C", pt)</div><div class="tile-lbl">Sua margem</div></div></div>
+                </div>
+                @if (Model.Operacao.Pagamento != null)
+                {
+                    <p class="small text-muted mt-3 mb-0">Pagamento: <strong>@Model.Operacao.Pagamento.Status</strong></p>
+                }
+            </div>
+        </div>
+    }
+
+  @if (Model.Operacao.Ordem != null && !string.IsNullOrEmpty(Model.Operacao.Ordem.MontadorNome))
+    {
+        <div class="pc-card mb-4">
+            <div class="pc-card-body">
+                <h5 class="fw-bold mb-2"><i class="bi bi-person-check me-2"></i>Montador alocado</h5>
+                <p class="mb-1"><strong>@Model.Operacao.Ordem.MontadorNome</strong> · @Model.Operacao.Ordem.MontadorTelefone</p>
+                <p class="small text-muted mb-0">Agendamento: @Model.Operacao.Ordem.DataAgendamento.ToLocalTime().ToString("dd/MM/yyyy HH:mm", pt)</p>
+            </div>
+        </div>
+    }
+
+    @if (p.StatusProjeto is "Aguardando_Provedor" or "Pagamento_Confirmado" or "Prestador_Alocado")
+    {
+        <div class="pc-card mb-4">
+            <div class="pc-card-body">
+                <h5 class="fw-bold mb-3"><i class="bi bi-tools me-2"></i>Alocar montador</h5>
+                @if (!Model.Marceneiros.Any())
+                {
+                    <p class="text-muted mb-0">Cadastre montadores em <a asp-page="/Admin/Marceneiros">Rede de marceneiros</a> primeiro.</p>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="Alocar" asp-route-id="@p.Id" class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label class="form-label">Montador</label>
+                            <select asp-for="MarceneiroId" class="form-select" required>
+                                <option value="">Selecione…</option>
+                                @foreach (var m in Model.Marceneiros)
+                                {
+                                    <option value="@m.Id">@m.Nome — @m.Cidade (@m.Telefone)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Data agendamento</label>
+                            <input asp-for="DataAgendamento" type="datetime-local" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-pc-primary w-100">Alocar</button>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
+    }
+
+    @if (p.StatusProjeto == "Prestador_Alocado")
+    {
+        <div class="pc-card mb-4 border-warning">
+            <div class="pc-card-body">
+                <h5 class="fw-bold mb-2">Montagem concluída?</h5>
+                <p class="small text-muted">Use quando o montador terminou na obra. Libera a vistoria do arquiteto (72h).</p>
+                <form method="post" asp-page-handler="ConcluirMontagem" asp-route-id="@p.Id">
+                    <button type="submit" class="btn btn-outline-warning">Marcar montagem concluída</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>

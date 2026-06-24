@@ -1,0 +1,95 @@
+@page
+@model PosCorte.Web.Pages.Admin.ArquitetosModel
+@{
+    ViewData["Title"] = "Arquitetos";
+    var pt = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+}
+
+<div class="container py-4">
+    <a asp-page="/Admin/Index" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Painel Admin</a>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-2 mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1">Arquitetos</h1>
+            <p class="text-muted mb-0">Cadastro manual — envie o login por WhatsApp após criar</p>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Mensagem))
+    {
+        <div class="pc-alert pc-alert-success mb-3">
+            <i class="bi bi-check-circle me-1"></i>@Model.Mensagem
+            @if (!string.IsNullOrEmpty(Model.SenhaGerada))
+            {
+                <div class="mt-2 small"><strong>Senha inicial:</strong> <code>@Model.SenhaGerada</code> — copie e mande pro arquiteto.</div>
+            }
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Erro))
+    {
+        <div class="pc-alert pc-alert-danger mb-3">@Model.Erro</div>
+    }
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-5">
+            <div class="pc-card h-100">
+                <div class="pc-card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-person-plus me-2"></i>Novo arquiteto</h5>
+                    <form method="post" asp-page-handler="Cadastrar">
+                        <div class="mb-3">
+                            <label class="form-label">Nome completo</label>
+                            <input asp-for="Input.Nome" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">E-mail (login)</label>
+                            <input asp-for="Input.Email" type="email" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">CPF ou CNPJ</label>
+                            <input asp-for="Input.CpfCnpj" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">WhatsApp</label>
+                            <input asp-for="Input.Telefone" class="form-control" placeholder="11999998888" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Senha inicial <span class="text-muted">(opcional)</span></label>
+                            <input asp-for="Input.Senha" type="text" class="form-control" placeholder="Deixe vazio para gerar automaticamente" />
+                        </div>
+                        <button type="submit" class="btn btn-pc-primary w-100">Cadastrar arquiteto</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="pc-card">
+                <div class="pc-card-body" style="padding-bottom:0">
+                    <h5 class="fw-bold mb-3">@Model.Arquitetos.Count cadastrados</h5>
+                </div>
+                @if (!Model.Arquitetos.Any())
+                {
+                    <div class="pc-card-body pt-0"><p class="text-muted mb-0">Nenhum arquiteto ainda. Cadastre o primeiro piloto acima.</p></div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="pc-table">
+                            <thead><tr><th>Nome</th><th>E-mail</th><th>WhatsApp</th><th>Desde</th></tr></thead>
+                            <tbody>
+                                @foreach (var a in Model.Arquitetos)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@a.Nome</td>
+                                        <td>@a.Email</td>
+                                        <td>@(string.IsNullOrEmpty(a.Telefone) ? "—" : a.Telefone)</td>
+                                        <td class="text-muted small">@a.DataCadastro.ToLocalTime().ToString("dd/MM/yy", pt)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

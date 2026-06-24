@@ -15,7 +15,7 @@ namespace PosCorte.API.Services
         {
             // STUB: hoje apenas registra. Para ativar WhatsApp (Z-API/Twilio) e e-mail (Resend/SendGrid),
             // implemente o envio aqui usando as credenciais documentadas em docs/INTEGRACAO_NOTIFICACOES.md.
-            _logger.LogInformation("[NOTIFICACAO] {Evento} · Projeto {ProjetoId} · {Mensagem}", evento, projetoId, mensagem);
+            _logger.LogInformation("[NOTIFICACAO] {Evento} ï¿½ Projeto {ProjetoId} ï¿½ {Mensagem}", evento, projetoId, mensagem);
             await Task.CompletedTask;
         }
 
@@ -25,7 +25,7 @@ namespace PosCorte.API.Services
 
             try
             {
-                // TODO: Integrar com serviço de notificação (Push, Email, SMS)
+                // TODO: Integrar com serviï¿½o de notificaï¿½ï¿½o (Push, Email, SMS)
                 await Task.Delay(100);
                 return true;
             }
@@ -42,7 +42,7 @@ namespace PosCorte.API.Services
 
             try
             {
-                // TODO: Integrar com serviço de SMS/WhatsApp
+                // TODO: Integrar com serviï¿½o de SMS/WhatsApp
                 await Task.Delay(100);
                 return true;
             }
@@ -59,7 +59,7 @@ namespace PosCorte.API.Services
 
             try
             {
-                // TODO: Integrar com serviço de email (SendGrid, Mailgun, etc)
+                // TODO: Integrar com serviï¿½o de email (SendGrid, Mailgun, etc)
                 await Task.Delay(100);
                 return true;
             }

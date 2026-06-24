@@ -21,6 +21,53 @@
     }
 
     <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <a asp-page="/Admin/Arquitetos" class="text-decoration-none">
+                <div class="pc-card h-100 pc-hoverable">
+                    <div class="pc-card-body text-center py-4">
+                        <i class="bi bi-people fs-3 text-primary"></i>
+                        <div class="fw-semibold mt-2">Arquitetos</div>
+                        <div class="small text-muted">Cadastrar piloto</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-page="/Admin/Marceneiros" class="text-decoration-none">
+                <div class="pc-card h-100 pc-hoverable">
+                    <div class="pc-card-body text-center py-4">
+                        <i class="bi bi-person-badge fs-3 text-primary"></i>
+                        <div class="fw-semibold mt-2">Montadores</div>
+                        <div class="small text-muted">Sua rede WhatsApp</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-page="/Admin/Projetos" class="text-decoration-none">
+                <div class="pc-card h-100 pc-hoverable">
+                    <div class="pc-card-body text-center py-4">
+                        <i class="bi bi-folder fs-3 text-primary"></i>
+                        <div class="fw-semibold mt-2">Projetos</div>
+                        <div class="small text-muted">Alocar montador</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-page="/Admin/Conta" class="text-decoration-none">
+                <div class="pc-card h-100 pc-hoverable">
+                    <div class="pc-card-body text-center py-4">
+                        <i class="bi bi-key fs-3 text-warning"></i>
+                        <div class="fw-semibold mt-2">Senha admin</div>
+                        <div class="small text-muted">Trocar em produção</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
             <div class="pc-tile"><div class="tile-num">@d.TotalArquitetos</div><div class="tile-lbl">Arquitetos</div></div>
         </div>
@@ -62,9 +109,9 @@
                     <h5 class="fw-bold mb-3"><i class="bi bi-exclamation-triangle me-2 text-warning"></i>Status das integrações</h5>
                     <div class="mb-2"><span class="text-muted">Gateway PIX:</span> <strong>@d.GatewayPagamento</strong></div>
                     <div class="mb-2"><span class="text-muted">Escrow:</span> <strong>@d.StatusEscrow</strong></div>
-                    <div class="pc-alert pc-alert-danger mt-3 mb-0 small">
+                    <div class="pc-alert pc-alert-info mt-3 mb-0 small">
                         <i class="bi bi-info-circle me-1"></i>
-                        Hoje <strong>nenhum PIX real</strong> é cobrado. O pagamento está simulado. Próximo passo: integrar Asaas ou Iugu.
+                        Operação <strong>manual</strong>: cadastre arquitetos e montadores, aloque em Projetos → Operar. PIX real quando Asaas estiver no seu CNPJ.
                     </div>
                 </div>
             </div>
@@ -88,7 +135,7 @@
         <div class="pc-card-body" style="padding-bottom:0"><h5 class="fw-bold mb-3">Projetos recentes</h5></div>
         <div class="table-responsive">
             <table class="pc-table">
-                <thead><tr><th>Projeto</th><th>Arquiteto</th><th>Valor</th><th>Sua margem</th><th>Montador</th><th>Status</th></tr></thead>
+                <thead><tr><th>Projeto</th><th>Arquiteto</th><th>Valor</th><th>Sua margem</th><th>Montador</th><th>Status</th><th></th></tr></thead>
                 <tbody>
                     @foreach (var p in d.ProjetosRecentes)
                     {
@@ -100,6 +147,7 @@
                             <td class="text-success">@p.MargemEstimada.ToString("C", pt)</td>
                             <td>@(p.MontadorNome ?? "—")</td>
                             <td><span class="pc-status @css">@label</span></td>
+                            <td><a asp-page="/Admin/Operar" asp-route-id="@p.Id" class="btn btn-pc-ghost btn-sm py-0">Operar</a></td>
                         </tr>
                     }
                 </tbody>

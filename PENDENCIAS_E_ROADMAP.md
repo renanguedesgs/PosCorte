@@ -6,23 +6,28 @@
 
 ---
 
-## 🆕 Atualização (polimento junho/2026)
+## 🆕 Atualização (junho/2026 — operação manual)
 
-Itens que **passaram de pendentes a prontos** nesta rodada de polimento (em modo simulação até ligar credenciais):
+**Estratégia:** cadastro e alocação **manual** pelo fundador. Sem Helpie/Gaba por enquanto.
 
-- ✅ **Estrutura de pagamento PIX** (Asaas + stub) — entidade `Pagamento`, gerar PIX, webhook, tela de pagamento.
-- ✅ **Escrow** — fundos retidos ao confirmar pagamento.
-- ✅ **Fluxo de vistoria completo** — arquiteto aprova montagem ou abre disputa.
-- ✅ **Liquidação automática 72h** — `BackgroundService` libera o escrow por prazo.
-- ✅ **Split 80/20 registrado** (`Liquidacao`) — execução real depende do Asaas.
-- ✅ **Status `Concluido` / `Em_Disputa`** ligados ao fluxo real.
-- ✅ **Tela "Pagar com PIX"** + breakdown de preço ancorado ("a taxa é seu seguro").
-- ✅ **Notificações centralizadas** por evento (stub pronto para WhatsApp/e-mail).
-- ✅ **Segurança** — cada arquiteto vê só os próprios projetos.
-- ✅ **UI/branding** — ícone nuvem+serra, fontes modernas, landing focada em conversão + **estimador público**.
+### Pronto no produto
 
-➡️ **O que ainda depende de você está consolidado em [`docs/ACOES_NECESSARIAS.md`](docs/ACOES_NECESSARIAS.md).**
-Os itens P1/P2/P3 abaixo seguem válidos como roadmap de evolução.
+- ✅ Operação manual admin (arquitetos, montadores, alocar, concluir montagem)
+- ✅ PIX stub + estrutura Asaas
+- ✅ Escrow, vistoria, liquidação 72h, split 80/20 registrado
+- ✅ Landing conversão + estimador público
+- ✅ Termos/Privacidade (piloto) + troca de senha admin
+- ✅ CORS produção + Docker Web + guia [`docs/DEPLOY.md`](docs/DEPLOY.md)
+- ✅ Planilhas modelo em `docs/templates/`
+- ✅ **34 testes** passando
+
+### Ainda depende de você
+
+- CNPJ + Asaas (PIX real)
+- Deploy + domínio
+- Divulgação + planilhas preenchidas + pilotos pagos
+
+➡️ Detalhes: [`docs/ACOES_NECESSARIAS.md`](docs/ACOES_NECESSARIAS.md) · [`docs/PLAYBOOK_UNICO.md`](docs/PLAYBOOK_UNICO.md)
 
 ---
 
@@ -32,32 +37,30 @@ Os itens P1/P2/P3 abaixo seguem válidos como roadmap de evolução.
 
 | Área | Status | Detalhe |
 |------|--------|---------|
-| **API REST (.NET 9)** | Pronto | JWT, Swagger, EF Core, migrations automáticas, Serilog |
-| **Banco PostgreSQL (Supabase)** | Pronto | Tabelas: usuarios, projetos, ordens_servico, marceneiros, avaliacoes |
-| **Web Arquiteto (Razor)** | Pronto | Landing, login, cadastro, dashboard, projetos, ordens |
-| **Web Admin (sua área)** | Pronto | Painel, financeiro (explicativo), projetos, rede de marceneiros |
-| **Motor de precificação** | Pronto | Markup inverso 20%: R$ 12,50/peça + R$ 40/gaveta |
-| **Fluxo de status** | Pronto | Aguardando_Pagamento → … → Aguardando_Vistoria |
-| **Rede de marceneiros (demo)** | Parcial | Cadastro + avaliações + alocação automática |
-| **Testes unitários** | Pronto | 27 testes passando |
-| **Autenticação** | Pronto | BCrypt + JWT (API) + Cookie (Web) |
-| **Admin seed** | Pronto | `admin@poscorte.com` / `Admin@PosCorte2026` |
+| **API REST (.NET 9)** | Pronto | JWT, EF Core, migrations, Serilog |
+| **Web Arquiteto + Admin** | Pronto | Landing, projetos, pagar PIX, operação manual |
+| **Pagamento** | Stub/Asaas | Tela PIX + webhook; real quando ligar credenciais |
+| **Escrow + vistoria + 72h** | Pronto | Fluxo completo + BackgroundService |
+| **Rede montadores** | Manual | Admin cadastra; sem API parceiro |
+| **Testes** | Pronto | 34 testes |
 
-### ⚠️ O que parece funcionar mas é SIMULAÇÃO
+### ⚠️ O que ainda é simulação ou humano
 
-| Item | Realidade hoje | Risco |
-|------|----------------|-------|
-| **Pagamento PIX** | `PagamentoService` sempre retorna `true` — **não cobra nada** | Zero receita real |
-| **Escrow (retenção)** | Simulado — nenhum dinheiro retido | Sem garantia ao arquiteto |
-| **Split 80/20** | Não executado — só calculado na tela | Marceneiro não recebe, você não recebe |
-| **Marceneiros importados** | API `randomuser.me` = **perfis fictícios** (nome/foto demo) | Não são profissionais reais |
-| **Provedor externo (Helpie etc.)** | URL fake — falha silenciosa, usa rede interna | OK por enquanto (rede própria) |
-| **Notificações** | Stub — só loga no console | Ninguém é avisado de nada |
-| **Liquidação 72h** | TODO no código — não roda | Fundos ficariam retidos para sempre |
+| Item | Realidade hoje |
+|------|----------------|
+| **PIX em produção** | Precisa Asaas no seu CNPJ |
+| **Split bancário real** | Registrado no sistema; transferência via Asaas pendente de credencial |
+| **Notificações** | Stub (log) — você opera pelo WhatsApp |
+| **Tração** | Zero até você divulgar e fechar pilotos |
 
-**Conclusão:** temos um **MVP de demonstração** com fluxo de negócio desenhado, mas **nenhuma transação financeira real** acontece ainda.
+**Conclusão:** MVP **operável em dev e pronto para deploy**. Receita real = CNPJ + Asaas + vendas.
 
 ---
+
+## 1b. (Legado) Baseline anterior — ignorar tabelas desatualizadas abaixo
+
+> As seções 3.x abaixo foram escritas antes do polimento jun/2026. Muitos itens P0 (PIX, vistoria, escrow) **já estão feitos**. Use [`ACOES_NECESSARIAS.md`](docs/ACOES_NECESSARIAS.md) como fonte da verdade.
+
 
 ## 2. Modelo de negócio (como o dinheiro deve fluir)
 
@@ -356,15 +359,14 @@ Semana 11–12 │ GTM: parcerias MDF + ads + primeiros 10 clientes reais
 
 ## 9. Resumo executivo (1 parágrafo)
 
-O PósCorte tem **arquitetura sólida**, **fluxo de negócio desenhado** e **interfaces funcionais** para arquiteto e admin. Porém, **pagamento, escrow, split, marceneiros reais e notificações ainda são simulação**. O caminho para faturar é: **(1)** integrar PIX real, **(2)** portal do marceneiro, **(3)** deploy em produção, **(4)** GTM em SP. Estimativa: **8–10 semanas de dev** + **CNPJ/conta Asaas** para o primeiro real.
+O PósCorte tem **produto completo para operação manual**: arquiteto paga (stub ou Asaas), admin aloca montador da rede, vistoria e escrow funcionam. Falta **CNPJ + Asaas + deploy + divulgação** para o primeiro PIX de cliente real. Próximo marco comercial: **3 pilotos pagos** (playbook Fase 3).
 
 ---
 
 ## 10. Próxima ação recomendada
 
-> **Integrar Asaas (PIX + webhook + split)** — é o único item que transforma demo em negócio.
-
-Depois disso: **portal do marceneiro** para fechar o ciclo operacional.
+> **Você (não código):** preencher planilhas, cadastrar 10 montadores no admin, 50 abordagens a arquitetos.  
+> **Técnico quando tiver CNPJ:** Asaas em produção (`docs/INTEGRACAO_PAGAMENTO_ASAAS.md`) + deploy (`docs/DEPLOY.md`).
 
 ---
 

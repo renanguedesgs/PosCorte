@@ -1,17 +1,15 @@
-# PósCorte API
+# PósCorte
 
-Plataforma SaaS de intermediação de serviços de montagem de móveis planejados.
+Plataforma de intermediação de **montagem de móveis planejados** ? orçamento instantâneo, PIX em escrow e operação manual de montadores (modelo fundador).
 
 ## Stack
 
-- **ASP.NET Core 9** — Web API
-- **PostgreSQL (Supabase)** — Banco de dados
-- **Entity Framework Core 9** — ORM
-- **Serilog** — Logging
-- **Refit** — Integração com API de provedor externo
-- **xUnit + Moq** — Testes unitários
-- **Docker** — Containerização
-- **Railway** — Deploy (CI/CD via GitHub Actions)
+- **ASP.NET Core 9** ? API REST + Razor Pages (Web)
+- **PostgreSQL (Supabase)** ? EF Core 9
+- **JWT + Cookie Auth** ? API + Web
+- **xUnit** ? 34 testes
+- **Docker** ? API + Web (`docker/`)
+- **GitHub Actions** ? CI build/test + CD Railway (API)
 
 ---
 
@@ -19,100 +17,57 @@ Plataforma SaaS de intermediação de serviços de montagem de móveis planejados.
 
 ```
 src/
-??? PosCorte.API/        # Controllers, Services, Middleware, EF DbContext
-??? PosCorte.Domain/     # Entities, ValueObjects
-??? PosCorte.Tests/      # Testes unitários (26 testes)
-docs/                    # Documentação de arquitetura, API, webhooks e regras
-docker/                  # Dockerfile e docker-compose
-.github/workflows/       # CI (build+test) e CD (deploy Railway)
+??? PosCorte.API/     # API, serviços, webhooks Asaas
+??? PosCorte.Domain/  # Entidades
+??? PosCorte.Web/     # Landing, arquiteto, admin
+??? PosCorte.Tests/
+docs/
+??? PLAYBOOK_UNICO.md      # Ordem de execução (comercial + produto)
+??? ACOES_NECESSARIAS.md   # O que só você faz
+??? DEPLOY.md              # Produção
+??? templates/             # Planilhas MONTADORES, ARQUITETOS
+docker/                    # Dockerfile + compose
 ```
 
 ---
 
 ## Rodar localmente
 
-### Pré-requisitos
-- [.NET 9 SDK](https://dotnet.microsoft.com/download)
-- Conta no [Supabase](https://supabase.com) com banco PostgreSQL
+Pré-requisito: **.NET 9 SDK** + `appsettings.Development.json` na API com connection string Supabase.
 
-### 1. Clonar e configurar
-```bash
-git clone https://github.com/renanguedesgs/PosCorte.git
-cd PosCorte
-```
-
-Criar o arquivo `src/PosCorte.API/appsettings.Development.json` com sua connection string:
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=db.SEU_HOST.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=SUA_SENHA;SSL Mode=Require;Trust Server Certificate=true"
-  }
-}
-```
-
-### 2. Aplicar migrations
-```bash
-cd src/PosCorte.API
-dotnet ef database update
-```
-
-### 3. Rodar a API
-```bash
-dotnet run --project src/PosCorte.API
-```
-
-Acesse o Swagger em: **http://localhost:5000**
-
-### 4. Rodar testes
-```bash
+```powershell
+dotnet run --project src/PosCorte.API/PosCorte.API.csproj --launch-profile http   # :5047
+dotnet run --project src/PosCorte.Web/PosCorte.Web.csproj --launch-profile http   # :5197
 dotnet test src/PosCorte.Tests/PosCorte.Tests.csproj
 ```
 
+**Admin:** `admin@poscorte.com` / `Admin@PosCorte2026`
+
 ---
 
-## Rodar com Docker
+## Docker
 
 ```bash
 cd docker
 docker compose up --build
+# API :8080 · Web :8081
 ```
 
-API disponível em: **http://localhost:8080**
+---
+
+## Documentação
+
+| Doc | Conteúdo |
+|-----|----------|
+| [`docs/PLAYBOOK_UNICO.md`](docs/PLAYBOOK_UNICO.md) | Fases 0?8, scripts, métricas |
+| [`docs/ACOES_NECESSARIAS.md`](docs/ACOES_NECESSARIAS.md) | CNPJ, Asaas, deploy, comercial |
+| [`docs/DEPLOY.md`](docs/DEPLOY.md) | Checklist produção |
+| [`STATUS.md`](STATUS.md) | Snapshot técnico |
 
 ---
 
-## Deploy (Railway)
+## Estado atual
 
-1. Crie uma conta em [railway.app](https://railway.app)
-2. Crie um novo projeto ? **Deploy from GitHub repo**
-3. Selecione o repositório `PosCorte`
-4. Adicione a variável de ambiente:
-   ```
-   ConnectionStrings__DefaultConnection = Host=...;Port=5432;...
-   ```
-5. Adicione o secret `RAILWAY_TOKEN` no GitHub:
-   - GitHub ? Settings ? Secrets ? `RAILWAY_TOKEN`
-6. O deploy acontece automaticamente a cada push na branch `main`
-
----
-
-## Endpoints principais
-
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `POST` | `/api/v1/usuarios` | Criar usuário |
-| `GET` | `/api/v1/usuarios` | Listar usuários |
-| `POST` | `/api/v1/projetos` | Criar projeto |
-| `POST` | `/api/v1/projetos/{id}/calcular-orcamento` | Calcular orçamento (markup 20%) |
-| `GET` | `/api/v1/ordens-servico` | Listar ordens |
-| `POST` | `/api/v1/webhooks/pagamento-confirmado` | Webhook pagamento PIX |
-| `POST` | `/api/v1/webhooks/atualizacao-montador` | Webhook montador |
-
-Documentação completa em [`docs/API_SPECIFICATION.md`](docs/API_SPECIFICATION.md)
-
----
-
-## Segurança
-
-- `appsettings.Development.json` está no `.gitignore` — a senha **nunca vai ao GitHub**
-- Em produção, use variáveis de ambiente para a `ConnectionStrings__DefaultConnection`
+- ? Produto completo para **operação manual** (cadastro arquiteto/montador, alocação, vistoria, escrow)
+- ? PIX real quando **Asaas + CNPJ**
+- ? Tração = **divulgação** (planilhas em `docs/templates/`)

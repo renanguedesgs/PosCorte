@@ -1,60 +1,112 @@
-@page
-@model PosCorte.Web.Pages.Admin.MarceneirosModel
-@using PosCorte.Web.Services
-@{
-    ViewData["Title"] = "Rede de marceneiros";
-}
-
-<div class="container py-4">
-    <a asp-page="/Admin/Index" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Painel Admin</a>
-
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-2 mb-4">
-        <div>
-            <h1 class="h3 fw-bold mb-1">Rede de marceneiros</h1>
-            <p class="text-muted mb-0">@Model.Marceneiros.Count profissionais (via provedor parceiro)</p>
-        </div>
-    </div>
-
-    <div class="pc-alert pc-alert-info mb-4">
-        <strong><i class="bi bi-info-circle me-1"></i>Como funciona:</strong>
-        Os marceneiros vêm da <strong>API do provedor parceiro</strong> (ex.: Helpie / Rede Gaba).
-        Quando o pagamento é confirmado, o PósCorte cria a ordem no provedor e o <strong>montador é alocado por eles</strong>.
-        O marceneiro <strong>não usa</strong> o PósCorte e <strong>recebe o pagamento na plataforma do provedor</strong>.
-        Não há cadastro manual nem perfis fictícios.
-    </div>
-
-    @if (!Model.Marceneiros.Any())
-    {
-        <div class="pc-empty pc-card">
-            <p class="mb-1"><strong>Nenhum marceneiro sincronizado ainda.</strong></p>
-            <p class="small text-muted mb-0">
-                Configure a integração em <code>ProvedorApi</code> (BaseUrl + ApiKey do parceiro) e habilite
-                <code>Enabled=true</code>. A partir daí o provedor aloca os montadores automaticamente.
-            </p>
-        </div>
-    }
-    else
-    {
-        <div class="row g-3">
-            @foreach (var m in Model.Marceneiros.Take(50))
-            {
-                <div class="col-md-6 col-lg-4">
-                    <div class="pc-marceneiro">
-                        <div class="topo">
-                            <img src="@(string.IsNullOrEmpty(m.FotoUrl) ? "https://ui-avatars.com/api/?name="+Uri.EscapeDataString(m.Nome) : m.FotoUrl)" class="foto" alt="" loading="lazy" />
-                            <div>
-                                <div class="nome">@m.Nome @if(m.Verificado){<i class="bi bi-patch-check-fill pc-verified"></i>}</div>
-                                <div class="pc-stars">@Html.Raw(UiHelper.Estrelas(m.NotaMedia)) @m.NotaMedia.ToString("0.0")</div>
-                                <div class="small text-muted">@m.Cidade, @m.Estado · @m.TotalServicos serviços</div>
-                            </div>
-                        </div>
-                        <div class="rodape">
-                            <span class="pc-status @(m.Disponivel ? "st-alocado" : "st-cancelado")">@(m.Disponivel ? "Disponível" : "Ocupado")</span>
-                            <span class="small text-muted">Repasse: 80% do projeto</span>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-</div>
+@page
+@model PosCorte.Web.Pages.Admin.MarceneirosModel
+@using PosCorte.Web.Services
+@{
+    ViewData["Title"] = "Rede de marceneiros";
+}
+
+<div class="container py-4">
+    <a asp-page="/Admin/Index" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Painel Admin</a>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-2 mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1">Rede de montadores</h1>
+            <p class="text-muted mb-0">@Model.Marceneiros.Count profissionais — cadastro manual por você</p>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Mensagem))
+    {
+        <div class="pc-alert pc-alert-success mb-3"><i class="bi bi-check-circle me-1"></i>@Model.Mensagem</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Erro))
+    {
+        <div class="pc-alert pc-alert-danger mb-3">@Model.Erro</div>
+    }
+
+    <div class="pc-alert pc-alert-info mb-4">
+        <strong><i class="bi bi-info-circle me-1"></i>Operação manual:</strong>
+        Você divulga, cadastra montadores aqui e <strong>aloca no projeto</strong> após o PIX (em Admin → Projetos → Operar).
+        O montador não usa o app — você coordena pelo WhatsApp.
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-5">
+            <div class="pc-card h-100">
+                <div class="pc-card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-person-plus me-2"></i>Novo montador</h5>
+                    <form method="post" asp-page-handler="Cadastrar">
+                        <div class="mb-3">
+                            <label class="form-label">Nome</label>
+                            <input asp-for="Input.Nome" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">WhatsApp</label>
+                            <input asp-for="Input.Telefone" class="form-control" required placeholder="11999998888" />
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-8">
+                                <label class="form-label">Cidade</label>
+                                <input asp-for="Input.Cidade" class="form-control" required />
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label">UF</label>
+                                <input asp-for="Input.Estado" class="form-control" value="SP" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Bairro</label>
+                            <input asp-for="Input.Bairro" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Especialidades</label>
+                            <input asp-for="Input.Especialidades" class="form-control" placeholder="Cozinha, Dormitório" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Observações</label>
+                            <textarea asp-for="Input.Bio" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input asp-for="Input.Verificado" class="form-check-input" type="checkbox" checked />
+                            <label class="form-check-label" asp-for="Input.Verificado">Homologado na rede</label>
+                        </div>
+                        <button type="submit" class="btn btn-pc-primary w-100">Cadastrar montador</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            @if (!Model.Marceneiros.Any())
+            {
+                <div class="pc-empty pc-card">
+                    <p class="mb-1"><strong>Nenhum montador cadastrado.</strong></p>
+                    <p class="small text-muted mb-0">Use o formulário ao lado para adicionar os primeiros da sua lista WhatsApp.</p>
+                </div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    @foreach (var m in Model.Marceneiros)
+                    {
+                        <div class="col-md-6">
+                            <div class="pc-marceneiro">
+                                <div class="topo">
+                                    <img src="@(string.IsNullOrEmpty(m.FotoUrl) ? "https://ui-avatars.com/api/?name="+Uri.EscapeDataString(m.Nome) : m.FotoUrl)" class="foto" alt="" loading="lazy" />
+                                    <div>
+                                        <div class="nome">@m.Nome @if(m.Verificado){<i class="bi bi-patch-check-fill pc-verified"></i>}</div>
+                                        <div class="pc-stars">@Html.Raw(UiHelper.Estrelas(m.NotaMedia)) @m.NotaMedia.ToString("0.0")</div>
+                                        <div class="small text-muted">@m.Cidade, @m.Estado · @m.Telefone</div>
+                                    </div>
+                                </div>
+                                <div class="rodape">
+                                    <span class="pc-status @(m.Disponivel ? "st-alocado" : "st-cancelado")">@(m.Disponivel ? "Disponível" : "Ocupado")</span>
+                                    <span class="small text-muted">@m.TotalServicos serviços</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

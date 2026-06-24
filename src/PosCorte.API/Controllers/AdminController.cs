@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,12 +18,21 @@ namespace PosCorte.API.Controllers
     {
         private readonly PosCorteDbContext _db;
         private readonly IPrecificacaoService _precificacao;
+        private readonly IOperacaoManualService _operacao;
+        private readonly IAuthService _auth;
         private readonly AsaasOptions _asaas;
 
-        public AdminController(PosCorteDbContext db, IPrecificacaoService precificacao, IOptions<AsaasOptions> asaas)
+        public AdminController(
+            PosCorteDbContext db,
+            IPrecificacaoService precificacao,
+            IOperacaoManualService operacao,
+            IAuthService auth,
+            IOptions<AsaasOptions> asaas)
         {
             _db = db;
             _precificacao = precificacao;
+            _operacao = operacao;
+            _auth = auth;
             _asaas = asaas.Value;
         }
 
@@ -81,13 +91,82 @@ namespace PosCorte.API.Controllers
                 VolumeTransacionadoEstimado = pagamentosConfirmados > 0
                     ? Math.Round(await _db.Pagamentos.Where(p => p.Status != "Cancelado").SumAsync(p => p.ValorTotal), 2)
                     : Math.Round(volume, 2),
-                GatewayPagamento = _asaas.EstaConfigurado ? "Asaas (configurado)" : "Stub — preencha Asaas:ApiKey + Enabled=true",
+                GatewayPagamento = _asaas.EstaConfigurado ? "Asaas (configurado)" : "Stub — simule pagamento em dev",
                 StatusEscrow = _asaas.EstaConfigurado
                     ? "Asaas + tabelas pagamentos/liquidacoes prontas"
-                    : "Modo desenvolvimento — sem cobranca real (use Simular pagamento)",
+                    : "Modo manual — você cadastra arquitetos/montadores e aloca no admin",
                 ProjetosPorStatus = projetos.GroupBy(p => p.StatusProjeto).ToDictionary(g => g.Key, g => g.Count()),
                 ProjetosRecentes = recentes
             });
+        }
+
+        [HttpGet("arquitetos")]
+        public async Task<ActionResult<IReadOnlyList<ArquitetoAdminDTO>>> ListarArquitetos()
+            => Ok(await _operacao.ListarArquitetosAsync());
+
+        [HttpPost("arquitetos")]
+        public async Task<ActionResult<CreateArquitetoAdminResponseDTO>> CadastrarArquiteto([FromBody] CreateArquitetoAdminDTO dto)
+        {
+            var (response, resultado) = await _operacao.CadastrarArquitetoAsync(dto);
+            return resultado switch
+            {
+                ResultadoOperacaoManual.EmailDuplicado => Conflict(new { erro = "E-mail já cadastrado." }),
+                ResultadoOperacaoManual.Ok => CreatedAtAction(nameof(ListarArquitetos), response),
+                _ => BadRequest()
+            };
+        }
+
+        [HttpPost("marceneiros")]
+        public async Task<IActionResult> CadastrarMarceneiro([FromBody] CreateMarceneiroAdminDTO dto)
+        {
+            var (marceneiro, resultado) = await _operacao.CadastrarMarceneiroAsync(dto);
+            if (resultado != ResultadoOperacaoManual.Ok || marceneiro == null)
+                return BadRequest();
+
+            return Ok(new { id = marceneiro.Id, nome = marceneiro.Nome, mensagem = "Montador cadastrado na rede." });
+        }
+
+        [HttpGet("projetos/{id:int}/operacao")]
+        public async Task<ActionResult<ProjetoOperacaoAdminDTO>> ObterProjetoOperacao(int id)
+        {
+            var dto = await _operacao.ObterProjetoOperacaoAsync(id);
+            return dto == null ? NotFound() : Ok(dto);
+        }
+
+        [HttpPost("projetos/{id:int}/alocar-montador")]
+        public async Task<IActionResult> AlocarMontador(int id, [FromBody] AlocarMontadorDTO dto)
+        {
+            var resultado = await _operacao.AlocarMontadorAsync(id, dto);
+            return resultado switch
+            {
+                ResultadoOperacaoManual.Ok => Ok(new { mensagem = "Montador alocado com sucesso." }),
+                ResultadoOperacaoManual.NaoEncontrado => NotFound(new { erro = "Projeto ou montador não encontrado." }),
+                ResultadoOperacaoManual.StatusInvalido => BadRequest(new { erro = "Status do projeto não permite alocação." }),
+                _ => BadRequest()
+            };
+        }
+
+        [HttpPost("projetos/{id:int}/marcar-montagem-concluida")]
+        public async Task<IActionResult> MarcarMontagemConcluida(int id)
+        {
+            var resultado = await _operacao.MarcarMontagemConcluidaAsync(id);
+            return resultado switch
+            {
+                ResultadoOperacaoManual.Ok => Ok(new { mensagem = "Montagem marcada como concluída. Arquiteto pode vistoriar." }),
+                ResultadoOperacaoManual.NaoEncontrado => NotFound(),
+                ResultadoOperacaoManual.StatusInvalido => BadRequest(new { erro = "Projeto precisa estar com montador alocado." }),
+                _ => BadRequest()
+            };
+        }
+
+        [HttpPost("conta/alterar-senha")]
+        public async Task<IActionResult> AlterarSenha([FromBody] AlterarSenhaDTO dto)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var (ok, erro) = await _auth.AlterarSenhaAsync(userId, dto.SenhaAtual, dto.SenhaNova);
+            if (!ok)
+                return BadRequest(new { erro });
+            return Ok(new { mensagem = "Senha alterada com sucesso." });
         }
     }
 }

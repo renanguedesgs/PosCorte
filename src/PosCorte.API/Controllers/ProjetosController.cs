@@ -49,13 +49,13 @@ namespace PosCorte.API.Controllers
         {
             _logger.LogInformation("Criando projeto: {NomeProjeto}", dto.NomeProjeto);
 
-            // Seguranùa: arquiteto sù cria projeto em nome prùprio (admin pode especificar outro).
+            // SeguranÔøΩa: arquiteto sÔøΩ cria projeto em nome prÔøΩprio (admin pode especificar outro).
             if (!IsAdmin && UsuarioId > 0)
                 dto.UsuarioId = UsuarioId;
 
             var usuario = await _usuarioRepo.GetByIdAsync(dto.UsuarioId);
             if (usuario == null)
-                return BadRequest(new { error = "Usuùrio nùo encontrado" });
+                return BadRequest(new { error = "UsuÔøΩrio nÔøΩo encontrado" });
 
             try
             {
@@ -82,8 +82,8 @@ namespace PosCorte.API.Controllers
         }
 
         /// <summary>
-        /// Calcular orùamento de montagem.
-        /// Usa fùrmula de Markup Inverso com taxa de 20%.
+        /// Calcular orÔøΩamento de montagem.
+        /// Usa fÔøΩrmula de Markup Inverso com taxa de 20%.
         /// </summary>
         [HttpPost("{id}/calcular-orcamento")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -93,7 +93,7 @@ namespace PosCorte.API.Controllers
         {
             var projeto = await _projetoRepo.GetByIdAsync(id);
             if (projeto == null)
-                return NotFound(new { error = "Projeto nùo encontrado" });
+                return NotFound(new { error = "Projeto nÔøΩo encontrado" });
 
             try
             {
@@ -121,7 +121,7 @@ namespace PosCorte.API.Controllers
             var projeto = await _projetoRepo.GetByIdAsync(id);
 
             if (projeto == null)
-                return NotFound(new { error = "Projeto nùo encontrado" });
+                return NotFound(new { error = "Projeto nÔøΩo encontrado" });
 
             if (!IsAdmin && UsuarioId > 0 && projeto.UsuarioId != UsuarioId)
                 return Forbid();
@@ -139,7 +139,7 @@ namespace PosCorte.API.Controllers
             return MapResultadoVistoria(resultado, "Montagem aprovada e pagamento liberado.");
         }
 
-        /// <summary>Arquiteto abre disputa: congela o escrow atù o admin resolver.</summary>
+        /// <summary>Arquiteto abre disputa: congela o escrow atÔøΩ o admin resolver.</summary>
         [HttpPost("{id}/abrir-disputa")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -149,29 +149,29 @@ namespace PosCorte.API.Controllers
             return MapResultadoVistoria(resultado, "Disputa aberta. O valor permanece retido em escrow.");
         }
 
-        /// <summary>DEV/teste: marca a montagem como concluùda e inicia a janela de vistoria.</summary>
+        /// <summary>DEV/teste: marca a montagem como concluÔøΩda e inicia a janela de vistoria.</summary>
         [HttpPost("{id}/simular-conclusao-montagem")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> SimularConclusaoMontagem(int id, [FromServices] IWebHostEnvironment env)
         {
             if (!env.IsDevelopment())
-                return BadRequest(new { error = "Disponùvel apenas em Development." });
+                return BadRequest(new { error = "DisponÔøΩvel apenas em Development." });
 
             var resultado = await _vistoriaService.MarcarMontagemConcluidaAsync(id, UsuarioId);
-            return MapResultadoVistoria(resultado, "Montagem marcada como concluùda. Vistoria iniciada.");
+            return MapResultadoVistoria(resultado, "Montagem marcada como concluÔøΩda. Vistoria iniciada.");
         }
 
         private IActionResult MapResultadoVistoria(ResultadoVistoria r, string okMsg) => r switch
         {
             ResultadoVistoria.Ok => Ok(new { message = okMsg }),
-            ResultadoVistoria.ProjetoNaoEncontrado => NotFound(new { error = "Projeto nùo encontrado." }),
+            ResultadoVistoria.ProjetoNaoEncontrado => NotFound(new { error = "Projeto nÔøΩo encontrado." }),
             ResultadoVistoria.NaoAutorizado => Forbid(),
-            ResultadoVistoria.StatusInvalido => BadRequest(new { error = "Aùùo nùo permitida no status atual do projeto." }),
-            ResultadoVistoria.FalhaLiquidacao => BadRequest(new { error = "Nùo foi possùvel liberar o escrow (sem pagamento retido)." }),
+            ResultadoVistoria.StatusInvalido => BadRequest(new { error = "AÔøΩÔøΩo nÔøΩo permitida no status atual do projeto." }),
+            ResultadoVistoria.FalhaLiquidacao => BadRequest(new { error = "NÔøΩo foi possÔøΩvel liberar o escrow (sem pagamento retido)." }),
             _ => BadRequest(new { error = "Erro desconhecido." })
         };
 
-        /// <summary>Gera cobranùa PIX (Asaas se configurado, senùo stub para dev).</summary>
+        /// <summary>Gera cobranÔøΩa PIX (Asaas se configurado, senÔøΩo stub para dev).</summary>
         [HttpPost("{id}/gerar-pix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -211,7 +211,7 @@ namespace PosCorte.API.Controllers
         {
             var projetos = await _projetoRepo.GetAllAsync();
 
-            // Arquiteto vù apenas os prùprios projetos; admin vù todos.
+            // Arquiteto vÔøΩ apenas os prÔøΩprios projetos; admin vÔøΩ todos.
             if (!IsAdmin && UsuarioId > 0)
                 projetos = projetos.Where(p => p.UsuarioId == UsuarioId).ToList();
 
