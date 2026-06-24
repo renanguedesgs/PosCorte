@@ -40,8 +40,9 @@ Hospede **API + Web no Railway** (seção abaixo). Depois aponte `APP_WEB_URL` n
 
 | Variável | Obrigatório | Exemplo |
 |----------|-------------|---------|
-| `ConnectionStrings__DefaultConnection` | Sim | Connection string PostgreSQL (Supabase) |
-| `Jwt__Key` | Sim | String aleatória 32+ caracteres |
+| `DB_PASSWORD` | Sim (se usar appsettings padrão) | Senha do Supabase |
+| `JWT_SECRET` | Sim | String aleatória 32+ caracteres |
+| `ConnectionStrings__DefaultConnection` | Sim (alternativa) | Connection string completa do Supabase |
 | `Jwt__Issuer` | Sim | `PosCorteAPI` |
 | `Jwt__Audience` | Sim | `PosCorteWeb` |
 | `Cors__AllowedOrigins__0` | Sim (prod) | `https://app.poscorte.com.br` |
@@ -75,6 +76,10 @@ Hospede **API + Web no Railway** (seção abaixo). Depois aponte `APP_WEB_URL` n
 4. Webhook Asaas: `https://api.poscorte.com.br/api/v1/webhooks/asaas`
 
 O workflow `.github/workflows/deploy.yml` já faz deploy da API no push em `main` (precisa do secret `RAILWAY_TOKEN`).
+
+**Guia passo a passo das variáveis:** [`RAILWAY_ENV.md`](RAILWAY_ENV.md)
+
+**Teste do banco após deploy:** `GET https://SUA-API.up.railway.app/api/v1/health`
 
 ---
 

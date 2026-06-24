@@ -6,5 +6,5 @@ builder = "DOCKERFILE"
 dockerfilePath = "docker/Dockerfile.web"
 
 [deploy]
-healthcheckPath = "/"
+healthcheckPath = "/api/v1/health"
 restartPolicyType = "ON_FAILURE"

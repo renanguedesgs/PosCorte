@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using PosCorte.API.Configuration;
 using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,7 +42,7 @@ builder.Services.AddScoped<IMarceneiroService, PosCorte.API.Services.Marceneiros
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // ===== JWT AUTHENTICATION =====
-var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key n�o configurado");
+var jwtKey = HostingConfiguration.ResolveJwtKey(builder.Configuration);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -59,8 +60,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 // ===== BANCO DE DADOS - Supabase (PostgreSQL) =====
+var dbConnection = HostingConfiguration.ResolveDatabaseConnection(builder.Configuration);
 builder.Services.AddDbContext<PosCorteDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(dbConnection));
 
 // Reposit�rios com EF Core
 builder.Services.AddScoped(typeof(IRepositorio<>), typeof(RepositorioEF<>));
@@ -127,8 +129,19 @@ var app = builder.Build();
 // ===== MIGRATIONS AUTOM�TICAS =====
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<PosCorteDbContext>();
-    db.Database.Migrate();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Database");
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<PosCorteDbContext>();
+        logger.LogInformation("Aplicando migrations no PostgreSQL...");
+        db.Database.Migrate();
+        logger.LogInformation("Banco de dados OK.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Falha ao conectar/migrar banco. Verifique DB_PASSWORD ou ConnectionStrings__DefaultConnection.");
+        throw;
+    }
 }
 
 await AdminSeedService.SeedAdminAsync(
