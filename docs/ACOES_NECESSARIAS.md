@@ -59,6 +59,8 @@ Asaas__WebhookToken  = (segredo)
 
 Detalhes: [`INTEGRACAO_PAGAMENTO_ASAAS.md`](INTEGRACAO_PAGAMENTO_ASAAS.md)
 
+**Banco (Supabase):** host `db.ftsdoekpuzjmbeprkivm.supabase.co` — configure a senha no Railway: [`SUPABASE_RAILWAY.md`](SUPABASE_RAILWAY.md)
+
 ---
 
 ## 3. 🟠 Deploy em produção

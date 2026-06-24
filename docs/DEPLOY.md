@@ -77,7 +77,7 @@ Hospede **API + Web no Railway** (seção abaixo). Depois aponte `APP_WEB_URL` n
 
 O workflow `.github/workflows/deploy.yml` já faz deploy da API no push em `main` (precisa do secret `RAILWAY_TOKEN`).
 
-**Guia passo a passo das variáveis:** [`RAILWAY_ENV.md`](RAILWAY_ENV.md)
+**Guia passo a passo das variáveis:** [`RAILWAY_ENV.md`](RAILWAY_ENV.md) · **Seu Supabase (host pronto):** [`SUPABASE_RAILWAY.md`](SUPABASE_RAILWAY.md)
 
 **Teste do banco após deploy:** `GET https://SUA-API.up.railway.app/api/v1/health`
 
