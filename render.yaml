@@ -1,0 +1,34 @@
+# Render Blueprint — opcional: Dashboard → New → Blueprint → conecta o repo
+# Ou crie os 2 serviços manualmente seguindo docs/PASSO_A_PASSO_FINAL.md
+
+services:
+  - type: web
+    name: poscorte-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: docker/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: Cors__AllowedOrigins__0
+        value: https://pos-corte.vercel.app
+
+  - type: web
+    name: poscorte-web
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: docker/Dockerfile.web
+    dockerContext: .
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ApiBaseUrl
+        sync: false

@@ -2,6 +2,7 @@
 
 > **Para:** Renan  
 > **Visão:** um documento só. Ordem de execução. Sem desculpa. Sem feature bonita antes de PIX.  
+> **Deploy (botão Cadastrar funcionando):** [`PASSO_A_PASSO_FINAL.md`](PASSO_A_PASSO_FINAL.md)  
 > **Estratégia travada:** manual (arquiteto + montador) + divulgação. Sem API Corte Cloud. Sem Helpie/Gaba até provar tração.  
 > **Meta 90 dias:** R$ 6.000–18.000/mês de margem (10–30 projetos pagos). Depois você toma suco de maracujá.
 

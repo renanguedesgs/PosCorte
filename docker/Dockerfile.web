@@ -16,5 +16,6 @@ RUN dotnet publish "PosCorte.Web.csproj" -c Release -o /app/publish /p:UseAppHos
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENV ASPNETCORE_URLS=http://+:8080
-ENTRYPOINT ["dotnet", "PosCorte.Web.dll"]
+COPY docker/entrypoint-web.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

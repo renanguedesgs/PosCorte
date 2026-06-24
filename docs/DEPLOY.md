@@ -1,5 +1,7 @@
 # PósCorte — Deploy em produção
 
+> **Comece aqui:** [`PASSO_A_PASSO_FINAL.md`](PASSO_A_PASSO_FINAL.md) — passo a passo linear (Supabase + Render + Vercel).
+
 > Checklist técnico para colocar API + Web no ar. **Estratégia:** operação manual (você cadastra arquitetos/montadores). Sem Helpie/Gaba por enquanto.
 
 ---
