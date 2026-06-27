@@ -21,6 +21,7 @@ namespace PosCorte.Web.Pages
         public int EmAndamento => Projetos.Count(p =>
             p.StatusProjeto is "Pagamento_Confirmado" or "Ordem_Criada" or "Prestador_Alocado" or "Aguardando_Vistoria");
         public int TotalOrdens => Ordens.Count;
+        public bool Onboarding => TotalProjetos == 0;
 
         public async Task OnGetAsync()
         {

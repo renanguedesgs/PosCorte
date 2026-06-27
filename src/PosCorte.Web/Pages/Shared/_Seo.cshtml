@@ -1,0 +1,33 @@
+@{
+    var title = ViewData["Title"] as string ?? "PósCorte";
+    var fullTitle = title.Contains("PósCorte", StringComparison.OrdinalIgnoreCase) ? title : $"{title} · PósCorte";
+    var desc = ViewData["MetaDescription"] as string
+        ?? "Montagem de móveis planejados com orçamento instantâneo, PIX em escrow e montador homologado em até 24h. Para arquitetos que não querem caçar marceneiro.";
+    var canonical = ViewData["CanonicalUrl"] as string ?? $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+    var ogImage = ViewData["OgImage"] as string ?? $"{Context.Request.Scheme}://{Context.Request.Host}/images/poscorte-icon.png";
+}
+<meta name="description" content="@desc" />
+<link rel="canonical" href="@canonical" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="pt_BR" />
+<meta property="og:site_name" content="PósCorte" />
+<meta property="og:title" content="@fullTitle" />
+<meta property="og:description" content="@desc" />
+<meta property="og:url" content="@canonical" />
+<meta property="og:image" content="@ogImage" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="@fullTitle" />
+<meta name="twitter:description" content="@desc" />
+<meta name="twitter:image" content="@ogImage" />
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "SoftwareApplication",
+  "name": "PósCorte",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "description": "Montagem de móveis planejados com orçamento instantâneo e escrow.",
+  "offers": { "@@type": "Offer", "price": "0", "priceCurrency": "BRL" },
+  "areaServed": { "@@type": "City", "name": "São Paulo" }
+}
+</script>

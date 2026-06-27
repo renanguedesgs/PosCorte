@@ -21,8 +21,9 @@ namespace PosCorte.Web.Pages.Projetos
         [BindProperty] public string EnderecoCompleto { get; set; } = string.Empty;
 
         public string? Erro { get; set; }
+        public bool Onboarding { get; set; }
 
-        public void OnGet() { }
+        public void OnGet(bool? onboarding) => Onboarding = onboarding == true;
 
         public async Task<IActionResult> OnPostAsync()
         {
@@ -34,7 +35,21 @@ namespace PosCorte.Web.Pages.Projetos
 
             if (QtdPecas <= 0 && QtdGavetas <= 0)
             {
-                Erro = "Informe ao menos uma peça ou gaveta.";
+                Erro = "Informe ao menos uma peça ou uma gaveta do plano de corte.";
+                return Page();
+            }
+
+            if (string.IsNullOrWhiteSpace(UrlArquivoCorteCloud) ||
+                !Uri.TryCreate(UrlArquivoCorteCloud.Trim(), UriKind.Absolute, out var uri) ||
+                uri.Scheme is not ("http" or "https"))
+            {
+                Erro = "Cole o link de compartilhamento válido do Corte Cloud (https://...).";
+                return Page();
+            }
+
+            if (string.IsNullOrWhiteSpace(CepObra) || string.IsNullOrWhiteSpace(EnderecoCompleto))
+            {
+                Erro = "CEP e endereço da obra são obrigatórios para alocar o montador.";
                 return Page();
             }
 
@@ -48,22 +63,25 @@ namespace PosCorte.Web.Pages.Projetos
             var input = new CriarProjetoInput
             {
                 UsuarioId = uid,
-                NomeProjeto = NomeProjeto,
-                UrlArquivoCorteCloud = UrlArquivoCorteCloud,
+                NomeProjeto = NomeProjeto.Trim(),
+                UrlArquivoCorteCloud = UrlArquivoCorteCloud.Trim(),
                 QtdPecas = QtdPecas,
                 QtdGavetas = QtdGavetas,
-                CepObra = CepObra,
-                EnderecoCompleto = EnderecoCompleto
+                CepObra = CepObra.Trim(),
+                EnderecoCompleto = EnderecoCompleto.Trim()
             };
 
-            var (ok, erro) = await _api.CriarProjetoAsync(input);
+            var (ok, erro, projetoId) = await _api.CriarProjetoAsync(input);
             if (!ok)
             {
                 Erro = "Não foi possível criar o projeto. " + erro;
                 return Page();
             }
 
-            TempData["sucesso"] = "Projeto criado com sucesso!";
+            if (projetoId.HasValue)
+                return RedirectToPage("/Projetos/Pagar", new { id = projetoId.Value });
+
+            TempData["sucesso"] = "Projeto criado! Agora pague com PIX para despachar o montador.";
             return RedirectToPage("/Projetos/Index");
         }
     }

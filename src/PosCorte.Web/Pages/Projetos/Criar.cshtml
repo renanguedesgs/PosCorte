@@ -7,69 +7,121 @@
 <div class="container py-4">
     <div class="mb-4">
         <a asp-page="/Projetos/Index" class="text-muted small"><i class="bi bi-arrow-left me-1"></i>Voltar para projetos</a>
-        <h1 class="h3 fw-bold mb-0 mt-2">Novo projeto</h1>
-        <p class="text-muted">Suba o plano de corte e veja o orçamento na hora.</p>
+        <div class="pc-page-header mt-2 mb-0 pb-0 border-0">
+            <h1>@(Model.Onboarding ? "Vamos despachar sua primeira montagem" : "Novo projeto")</h1>
+            <p class="text-muted mb-0 mt-1">@(Model.Onboarding ? "3 passos rápidos — leva menos de 2 minutos." : "Suba o plano de corte e veja o orçamento na hora.")</p>
+        </div>
     </div>
+
+    @if (Model.Onboarding)
+    {
+        <div class="pc-alert pc-alert-success mb-4">
+            <i class="bi bi-party-popper me-1"></i>
+            <strong>Conta criada!</strong> Agora suba seu projeto do Corte Cloud e pague com PIX em escrow — o montador é alocado automaticamente.
+        </div>
+    }
 
     @if (!string.IsNullOrEmpty(Model.Erro))
     {
         <div class="pc-alert pc-alert-danger mb-3"><i class="bi bi-exclamation-circle me-1"></i>@Model.Erro</div>
     }
 
-    <form method="post">
+    <form method="post" id="formProjeto">
+        <div class="pc-wizard-steps" id="wizardSteps">
+            <div class="step active" data-step="1">1. Projeto</div>
+            <div class="step" data-step="2">2. Corte Cloud</div>
+            <div class="step" data-step="3">3. Obra</div>
+        </div>
+
         <div class="row g-4">
             <div class="col-lg-7">
                 <div class="pc-card">
                     <div class="pc-card-body">
-                        <div class="mb-3">
-                            <label class="form-label">Nome do projeto</label>
-                            <input asp-for="NomeProjeto" class="form-control" placeholder="Cozinha Apto 142 - Cliente Silva" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">URL do arquivo de corte (Corte Cloud)</label>
-                            <input asp-for="UrlArquivoCorteCloud" class="form-control" placeholder="https://cortecloud.com/projeto/..." />
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-6 mb-3">
-                                <label class="form-label">Quantidade de peças</label>
-                                <input asp-for="QtdPecas" id="qtdPecas" type="number" min="0" class="form-control" value="0" />
+                        <div class="pc-wizard-pane active" data-pane="1">
+                            <h5 class="fw-bold mb-3"><i class="bi bi-folder me-2"></i>Identifique o projeto</h5>
+                            <div class="mb-3">
+                                <label class="form-label">Nome do projeto</label>
+                                <input asp-for="NomeProjeto" id="nomeProjeto" class="form-control" placeholder="Cozinha Apto 142 - Cliente Silva" required minlength="3" />
+                                <div class="small mt-1" id="feedbackNome"></div>
                             </div>
-                            <div class="col-6 mb-3">
-                                <label class="form-label">Quantidade de gavetas</label>
-                                <input asp-for="QtdGavetas" id="qtdGavetas" type="number" min="0" class="form-control" value="0" />
+                            <button type="button" class="btn btn-pc-primary" data-wizard-next>Continuar <i class="bi bi-arrow-right ms-1"></i></button>
+                        </div>
+
+                        <div class="pc-wizard-pane" data-pane="2">
+                            <h5 class="fw-bold mb-3"><i class="bi bi-cloud-arrow-up me-2"></i>Plano de corte (Corte Cloud)</h5>
+                            <div class="pc-alert pc-alert-info mb-3 small">
+                                <i class="bi bi-info-circle me-1"></i>
+                                No Corte Cloud: exporte o projeto e copie o <strong>link de compartilhamento</strong>.
+                                Conte as peças e gavetas do plano de corte.
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL do arquivo de corte <span class="text-danger">*</span></label>
+                                <input asp-for="UrlArquivoCorteCloud" id="urlCorteCloud" class="form-control" type="url"
+                                       placeholder="https://cortecloud.com/projeto/..." required />
+                                <div class="small mt-1" id="feedbackUrl"></div>
+                            </div>
+                            <div class="row g-3 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label">Quantidade de peças <span class="text-danger">*</span></label>
+                                    <input asp-for="QtdPecas" id="qtdPecas" type="number" min="0" class="form-control" />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Quantidade de gavetas <span class="text-danger">*</span></label>
+                                    <input asp-for="QtdGavetas" id="qtdGavetas" type="number" min="0" class="form-control" />
+                                </div>
+                            </div>
+                            <p class="small text-muted mb-3">Preencha ao menos <strong>1 peça</strong> ou <strong>1 gaveta</strong>.</p>
+                            <div class="small mb-3" id="feedbackQtd"></div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-pc-ghost" data-wizard-prev>Voltar</button>
+                                <button type="button" class="btn btn-pc-primary" data-wizard-next>Continuar <i class="bi bi-arrow-right ms-1"></i></button>
                             </div>
                         </div>
-                        <div class="row g-3">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">CEP da obra</label>
-                                <input asp-for="CepObra" class="form-control" placeholder="01310100" />
+
+                        <div class="pc-wizard-pane" data-pane="3">
+                            <h5 class="fw-bold mb-3"><i class="bi bi-geo-alt me-2"></i>Local da montagem</h5>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">CEP da obra</label>
+                                    <input asp-for="CepObra" id="cepObra" class="form-control" placeholder="01310100" maxlength="9" required />
+                                    <div class="form-text" id="cepStatus"></div>
+                                    <div class="small" id="feedbackCep"></div>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label">Endereço completo</label>
+                                    <input asp-for="EnderecoCompleto" id="enderecoObra" class="form-control" placeholder="Rua, número, bairro, cidade - UF" required minlength="10" />
+                                    <div class="small mt-1" id="feedbackEndereco"></div>
+                                </div>
                             </div>
-                            <div class="col-md-8 mb-3">
-                                <label class="form-label">Endereço completo</label>
-                                <input asp-for="EnderecoCompleto" class="form-control" placeholder="Av. Paulista, 1000 - Bela Vista, São Paulo - SP" />
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-pc-ghost" data-wizard-prev>Voltar</button>
+                                <button type="submit" class="btn btn-pc-primary">
+                                    <i class="bi bi-qr-code me-1"></i>Ir para pagamento PIX
+                                </button>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-pc-primary"><i class="bi bi-check-lg me-1"></i>Criar projeto</button>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-5">
-                <div class="pc-orcamento">
+                <div class="pc-orcamento sticky-top" style="top:5.5rem">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="pc-eyebrow">Orçamento estimado</span>
+                        <span class="pc-eyebrow">Orçamento ao vivo</span>
                         <i class="bi bi-lightning-charge-fill text-warning fs-5"></i>
                     </div>
                     <div class="valor" id="valorTotal">R$ 0,00</div>
-                    <p class="text-muted small mb-3">Preço final ao arquiteto (markup inverso 20%)</p>
+                    <p class="text-muted small mb-3">Você paga com escrow — montador só recebe após aprovação.</p>
                     <div class="d-flex justify-content-between py-1 border-top">
-                        <span class="text-muted">Custo da mão de obra</span><span class="fw-semibold" id="custoPrestador">R$ 0,00</span>
+                        <span class="text-muted">Mão de obra</span><span class="fw-semibold" id="custoPrestador">R$ 0,00</span>
                     </div>
                     <div class="d-flex justify-content-between py-1 border-top">
-                        <span class="text-muted">Margem da plataforma</span><span class="fw-semibold text-success" id="margemLucro">R$ 0,00</span>
+                        <span class="text-muted">Taxa segurança (20%)</span><span class="fw-semibold text-success" id="margemLucro">R$ 0,00</span>
                     </div>
-                    <div class="small text-muted mt-3">
-                        <i class="bi bi-info-circle me-1"></i>R$ 12,50 por peça · R$ 40,00 por gaveta
+                    <div class="pc-guarantee-row mt-3">
+                        <span class="item"><i class="bi bi-shield-lock"></i> Escrow</span>
+                        <span class="item"><i class="bi bi-patch-check"></i> Homologado</span>
+                        <span class="item"><i class="bi bi-clock"></i> 24h alocação</span>
                     </div>
                 </div>
             </div>
@@ -78,19 +130,5 @@
 </div>
 
 @section Scripts {
-    <script>
-        const fmt = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        function calcular() {
-            const pecas = parseInt(document.getElementById('qtdPecas').value) || 0;
-            const gavetas = parseInt(document.getElementById('qtdGavetas').value) || 0;
-            const custo = pecas * 12.5 + gavetas * 40;
-            const total = custo > 0 ? custo / 0.8 : 0;
-            document.getElementById('valorTotal').textContent = fmt(total);
-            document.getElementById('custoPrestador').textContent = fmt(custo);
-            document.getElementById('margemLucro').textContent = fmt(total - custo);
-        }
-        document.getElementById('qtdPecas').addEventListener('input', calcular);
-        document.getElementById('qtdGavetas').addEventListener('input', calcular);
-        calcular();
-    </script>
+    <script src="~/js/projeto-wizard.js" asp-append-version="true"></script>
 }

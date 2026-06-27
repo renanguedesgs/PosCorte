@@ -1,50 +1,51 @@
-@page
-@model PosCorte.Web.Pages.Auth.LoginModel
-@{
-    ViewData["Title"] = "Entrar";
-}
-
-<div class="pc-auth-wrap">
-    <div class="pc-auth-card">
-            <div class="text-center mb-4">
-                @{
-                    ViewData["BrandExtraClass"] = "justify-content-center mb-2 d-inline-flex";
-                    ViewData["BrandFooter"] = false;
-                    ViewData["BrandAuth"] = true;
-                    ViewData["BrandLink"] = true;
-                }
-                <partial name="_Brand" />
-            <h1 class="h3 fw-bold mb-1">Bem-vindo de volta</h1>
-            <p class="text-muted mb-0">Acesse sua central de projetos</p>
-        </div>
-
-        <div class="pc-card">
-            <div class="pc-card-body">
-                @if (!string.IsNullOrEmpty(Model.Erro))
-                {
-                    <div class="pc-alert pc-alert-danger mb-3"><i class="bi bi-exclamation-circle me-1"></i>@Model.Erro</div>
-                }
-                @if (!string.IsNullOrEmpty(Model.Sucesso))
-                {
-                    <div class="pc-alert pc-alert-success mb-3"><i class="bi bi-check-circle me-1"></i>@Model.Sucesso</div>
-                }
-
-                <form method="post">
-                    <div class="mb-3">
-                        <label class="form-label">E-mail</label>
-                        <input asp-for="Email" class="form-control" type="email" placeholder="voce@escritorio.com" autofocus />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Senha</label>
-                        <input asp-for="Senha" class="form-control" type="password" placeholder="••••••••" />
-                    </div>
-                    <button type="submit" class="btn btn-pc-primary w-100">Entrar <i class="bi bi-arrow-right ms-1"></i></button>
-                </form>
-            </div>
-        </div>
-
-        <p class="text-center text-muted mt-4 mb-0">
-            Ainda não tem conta? <a asp-page="/Auth/Register" class="fw-semibold">Criar conta grátis</a>
-        </p>
-    </div>
-</div>
+@page
+@model PosCorte.Web.Pages.Auth.LoginModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Entrar";
+}
+
+<div class="pc-auth-form-header">
+    <h1 class="pc-auth-form-title">Bem-vindo de volta</h1>
+    <p class="pc-auth-form-sub">Acesse sua central de projetos e montagens.</p>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Erro))
+{
+    <div class="pc-alert pc-alert-danger mb-4"><i class="bi bi-exclamation-circle me-1"></i>@Model.Erro</div>
+}
+@if (!string.IsNullOrEmpty(Model.Sucesso))
+{
+    <div class="pc-alert pc-alert-success mb-4"><i class="bi bi-check-circle me-1"></i>@Model.Sucesso</div>
+}
+
+<form method="post" class="pc-auth-form" id="loginForm">
+    <div class="mb-3">
+        <label class="form-label" for="Email">E-mail</label>
+        <div class="pc-input-icon-wrap">
+            <i class="bi bi-envelope"></i>
+            <input asp-for="Email" class="form-control pc-input-icon" id="Email" type="email" placeholder="voce@escritorio.com" required autofocus />
+        </div>
+    </div>
+    <div class="mb-4">
+        <label class="form-label" for="Senha">Senha</label>
+        <div class="pc-input-icon-wrap pc-input-password">
+            <i class="bi bi-lock"></i>
+            <input asp-for="Senha" class="form-control pc-input-icon" id="Senha" type="password" placeholder="••••••••" required autocomplete="current-password" />
+            <button type="button" class="pc-toggle-password" data-target="Senha" aria-label="Mostrar senha">
+                <i class="bi bi-eye"></i>
+            </button>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-pc-primary btn-lg w-100 pc-auth-submit">
+        Entrar <i class="bi bi-arrow-right ms-1"></i>
+    </button>
+</form>
+
+<p class="text-center text-muted mt-4 mb-0">
+    Ainda não tem conta? <a asp-page="/Auth/Register" class="fw-semibold text-decoration-none">Criar conta grátis</a>
+</p>
+
+@section Scripts {
+    <script src="~/js/auth.js" asp-append-version="true"></script>
+}

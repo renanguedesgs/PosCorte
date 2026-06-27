@@ -60,6 +60,14 @@ namespace PosCorte.Web.Services
             _ => ("st-default", string.IsNullOrEmpty(status) ? "—" : status)
         };
 
+        /// <summary>Extrai ID do marceneiro de ordens alocadas manualmente (MC-123).</summary>
+        public static int? ParseMarceneiroIdFromOrdem(string? externalProviderId)
+        {
+            if (string.IsNullOrWhiteSpace(externalProviderId) || !externalProviderId.StartsWith("MC-", StringComparison.OrdinalIgnoreCase))
+                return null;
+            return int.TryParse(externalProviderId.AsSpan(3), out var id) ? id : null;
+        }
+
         /// <summary>Gera o HTML de estrelas (cheias/meia/vazias) para uma nota de 0 a 5.</summary>
         public static string Estrelas(decimal nota)
         {

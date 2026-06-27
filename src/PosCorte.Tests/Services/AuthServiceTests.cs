@@ -31,9 +31,9 @@ namespace PosCorte.Tests.Services
 
             var service = new AuthService(db, config, Mock.Of<ILogger<AuthService>>());
 
-            var (ok, erro) = await service.AlterarSenhaAsync(u.Id, senhaInicial, "NovaSenha456");
+            var (ok, erro) = await service.AlterarSenhaAsync(u.Id, senhaInicial, "NovaSenha456!");
             Assert.True(ok, erro);
-            Assert.True(BCrypt.Net.BCrypt.Verify("NovaSenha456", (await db.Usuarios.FindAsync(u.Id))!.SenhaHash));
+            Assert.True(BCrypt.Net.BCrypt.Verify("NovaSenha456!", (await db.Usuarios.FindAsync(u.Id))!.SenhaHash));
         }
     }
 }

@@ -1,6 +1,6 @@
-# PósCorte
+# Pï¿½sCorte
 
-Plataforma de intermediação de **montagem de móveis planejados** ? orçamento instantâneo, PIX em escrow e operação manual de montadores (modelo fundador).
+Plataforma de intermediaï¿½ï¿½o de **montagem de mï¿½veis planejados** ? orï¿½amento instantï¿½neo, PIX em escrow e operaï¿½ï¿½o manual de montadores (modelo fundador).
 
 ## Stack
 
@@ -17,14 +17,14 @@ Plataforma de intermediação de **montagem de móveis planejados** ? orçamento ins
 
 ```
 src/
-??? PosCorte.API/     # API, serviços, webhooks Asaas
+??? PosCorte.API/     # API, serviï¿½os, webhooks Asaas
 ??? PosCorte.Domain/  # Entidades
 ??? PosCorte.Web/     # Landing, arquiteto, admin
 ??? PosCorte.Tests/
 docs/
-??? PLAYBOOK_UNICO.md      # Ordem de execução (comercial + produto)
-??? ACOES_NECESSARIAS.md   # O que só você faz
-??? DEPLOY.md              # Produção
+??? PLAYBOOK_UNICO.md      # Ordem de execuï¿½ï¿½o (comercial + produto)
+??? ACOES_NECESSARIAS.md   # O que sï¿½ vocï¿½ faz
+??? DEPLOY.md              # Produï¿½ï¿½o
 ??? templates/             # Planilhas MONTADORES, ARQUITETOS
 docker/                    # Dockerfile + compose
 ```
@@ -33,7 +33,7 @@ docker/                    # Dockerfile + compose
 
 ## Rodar localmente
 
-Pré-requisito: **.NET 9 SDK** + `appsettings.Development.json` na API com connection string Supabase.
+Prï¿½-requisito: **.NET 9 SDK** + `appsettings.Development.json` na API com connection string Supabase.
 
 ```powershell
 dotnet run --project src/PosCorte.API/PosCorte.API.csproj --launch-profile http   # :5047
@@ -50,24 +50,24 @@ dotnet test src/PosCorte.Tests/PosCorte.Tests.csproj
 ```bash
 cd docker
 docker compose up --build
-# API :8080 · Web :8081
+# API :8080 ï¿½ Web :8081
 ```
 
 ---
 
-## Documentação
+## Documentaï¿½ï¿½o
 
-| Doc | Conteúdo |
+| Doc | Conteï¿½do |
 |-----|----------|
-| [`docs/PLAYBOOK_UNICO.md`](docs/PLAYBOOK_UNICO.md) | Fases 0?8, scripts, métricas |
+| [`docs/PLAYBOOK_UNICO.md`](docs/PLAYBOOK_UNICO.md) | Fases 0?8, scripts, mï¿½tricas |
 | [`docs/ACOES_NECESSARIAS.md`](docs/ACOES_NECESSARIAS.md) | CNPJ, Asaas, deploy, comercial |
-| [`docs/DEPLOY.md`](docs/DEPLOY.md) | Checklist produção |
-| [`STATUS.md`](STATUS.md) | Snapshot técnico |
+| [`docs/DEPLOY.md`](docs/DEPLOY.md) | Checklist produï¿½ï¿½o |
+| [`STATUS.md`](STATUS.md) | Snapshot tï¿½cnico |
 
 ---
 
 ## Estado atual
 
-- ? Produto completo para **operação manual** (cadastro arquiteto/montador, alocação, vistoria, escrow)
+- ? Produto completo para **operaï¿½ï¿½o manual** (cadastro arquiteto/montador, alocaï¿½ï¿½o, vistoria, escrow)
 - ? PIX real quando **Asaas + CNPJ**
-- ? Tração = **divulgação** (planilhas em `docs/templates/`)
+- ? Traï¿½ï¿½o = **divulgaï¿½ï¿½o** (planilhas em `docs/templates/`)

@@ -1,0 +1,76 @@
+@page
+@model PosCorte.Web.Pages.Conta.PerfilModel
+@{
+    ViewData["Title"] = "Meu perfil";
+}
+
+<div class="container py-4" style="max-width:720px">
+    <h1 class="h3 fw-bold mb-4">Meu perfil</h1>
+
+    @if (!string.IsNullOrEmpty(Model.Mensagem))
+    {
+        <div class="pc-alert pc-alert-success mb-3"><i class="bi bi-check-circle me-1"></i>@Model.Mensagem</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Erro))
+    {
+        <div class="pc-alert pc-alert-danger mb-3"><i class="bi bi-exclamation-circle me-1"></i>@Model.Erro</div>
+    }
+
+    @if (Model.Perfil != null)
+    {
+        <div class="pc-card mb-4">
+            <div class="pc-card-body">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <span class="pc-avatar pc-avatar-lg">@(Model.Perfil.Nome.Substring(0, 1).ToUpper())</span>
+                    <div>
+                        <h2 class="h5 fw-bold mb-0">@Model.Perfil.Nome</h2>
+                        <span class="text-muted small">@Model.Perfil.Role</span>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="tile-lbl">E-mail</div>
+                        <div class="fw-semibold">@Model.Perfil.Email</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="tile-lbl">Telefone / WhatsApp</div>
+                        <div class="fw-semibold">@Model.Perfil.Telefone</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="tile-lbl">CPF / CNPJ</div>
+                        <div class="fw-semibold">@Model.Perfil.CpfCnpj</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="tile-lbl">Membro desde</div>
+                        <div class="fw-semibold">@Model.Perfil.DataCadastro.ToLocalTime().ToString("dd/MM/yyyy")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="pc-card">
+        <div class="pc-card-body">
+            <h2 class="h5 fw-bold mb-3"><i class="bi bi-key me-2"></i>Trocar senha</h2>
+            <form method="post" asp-page-handler="Senha" id="perfilSenhaForm">
+                <div class="mb-3">
+                    <label class="form-label">Senha atual</label>
+                    <input asp-for="SenhaAtual" type="password" class="form-control" required autocomplete="current-password" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nova senha</label>
+                    <input asp-for="SenhaNova" type="password" id="SenhaNova" class="form-control" required autocomplete="new-password" minlength="8" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Confirmar nova senha</label>
+                    <input asp-for="SenhaNovaConfirmacao" type="password" class="form-control" required autocomplete="new-password" />
+                </div>
+                <button type="submit" class="btn btn-pc-primary">Salvar nova senha</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/auth.js" asp-append-version="true"></script>
+}

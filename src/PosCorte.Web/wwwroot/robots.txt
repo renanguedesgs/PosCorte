@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Allow: /Marceneiros/Seja
+Allow: /Auth/Register
+Disallow: /Admin/
+Disallow: /Auth/Logout
+
+Sitemap: https://pos-corte.vercel.app/sitemap.xml

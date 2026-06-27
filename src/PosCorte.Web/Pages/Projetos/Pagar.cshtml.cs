@@ -50,14 +50,14 @@ namespace PosCorte.Web.Pages.Projetos
                 return await OnGetAsync(id);
             }
 
-            return RedirectToPage("/Projetos/Detalhes", new { id });
+            return RedirectToPage("/Projetos/Sucesso", new { id });
         }
 
         public async Task<IActionResult> OnGetStatusAsync(int id)
         {
             var status = await _api.ObterStatusPagamentoAsync(id);
             if (status?.Status == "Confirmado" || status?.StatusProjeto == "Aguardando_Provedor")
-                return new JsonResult(new { pago = true, redirect = Url.Page("/Projetos/Detalhes", new { id }) });
+                return new JsonResult(new { pago = true, redirect = Url.Page("/Projetos/Sucesso", new { id }) });
 
             return new JsonResult(new { pago = false });
         }

@@ -24,6 +24,30 @@ namespace PosCorte.API.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Auto-cadastro público de montador (a própria pessoa se cadastra pelo link
+        /// "Seja um montador"). Entra como pendente até a homologação no admin.
+        /// </summary>
+        [HttpPost("auto-cadastro")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> AutoCadastro([FromBody] AutoCadastroMarceneiroDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var (marceneiro, resultado) = await _service.AutoCadastrarAsync(dto);
+            return resultado switch
+            {
+                ResultadoAutoCadastro.Ok => CreatedAtAction(nameof(Obter), new { id = marceneiro!.Id },
+                    new { id = marceneiro!.Id, mensagem = "Cadastro recebido! Em breve homologamos seu perfil." }),
+                ResultadoAutoCadastro.Duplicado => Conflict(new { erro = "Já existe um cadastro com esse telefone ou e-mail." }),
+                _ => BadRequest(new { erro = "Nome, WhatsApp e cidade são obrigatórios." })
+            };
+        }
+
         /// <summary>Lista marceneiros com filtros opcionais (cidade, especialidade, nota mínima, disponibilidade).</summary>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -115,6 +139,7 @@ namespace PosCorte.API.Controllers
             Cidade = m.Cidade,
             Estado = m.Estado,
             Bairro = m.Bairro,
+            Cep = m.Cep,
             Especialidades = SplitEspecialidades(m.Especialidades),
             Bio = m.Bio,
             NotaMedia = m.NotaMedia,

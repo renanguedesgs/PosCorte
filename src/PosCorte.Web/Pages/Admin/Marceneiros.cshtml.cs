@@ -12,7 +12,8 @@ namespace PosCorte.Web.Pages.Admin
 
         public MarceneirosModel(ApiService api) => _api = api;
 
-        public List<MarceneiroViewModel> Marceneiros { get; set; } = new();
+        public List<MarceneiroAdminViewModel> Pendentes { get; set; } = new();
+        public List<MarceneiroAdminViewModel> Homologados { get; set; } = new();
 
         [BindProperty]
         public CreateMarceneiroAdminInput Input { get; set; } = new();
@@ -20,18 +21,20 @@ namespace PosCorte.Web.Pages.Admin
         public string? Mensagem { get; set; }
         public string? Erro { get; set; }
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync() => await CarregarAsync();
+
+        private async Task CarregarAsync()
         {
-            Marceneiros = await _api.ListarMarceneirosAsync();
+            Pendentes = await _api.ListarMarceneirosAdminAsync(verificado: false);
+            Homologados = await _api.ListarMarceneirosAdminAsync(verificado: true);
         }
 
         public async Task<IActionResult> OnPostCadastrarAsync()
         {
-            Marceneiros = await _api.ListarMarceneirosAsync();
-
             if (string.IsNullOrWhiteSpace(Input.Nome) || string.IsNullOrWhiteSpace(Input.Telefone) || string.IsNullOrWhiteSpace(Input.Cidade))
             {
                 Erro = "Nome, telefone e cidade são obrigatórios.";
+                await CarregarAsync();
                 return Page();
             }
 
@@ -39,12 +42,31 @@ namespace PosCorte.Web.Pages.Admin
             if (!ok)
             {
                 Erro = erro ?? "Não foi possível cadastrar.";
+                await CarregarAsync();
                 return Page();
             }
 
             Mensagem = $"Montador {Input.Nome} adicionado à rede.";
             Input = new();
-            Marceneiros = await _api.ListarMarceneirosAsync();
+            await CarregarAsync();
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostVerificarAsync(int id)
+        {
+            var (ok, erro) = await _api.VerificarMarceneiroAsync(id);
+            Mensagem = ok ? "Montador homologado. Já entra na alocação automática." : null;
+            Erro = ok ? null : (erro ?? "Não foi possível homologar.");
+            await CarregarAsync();
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostDisponibilidadeAsync(int id)
+        {
+            var (ok, erro) = await _api.AlternarDisponibilidadeMarceneiroAsync(id);
+            Mensagem = ok ? "Disponibilidade atualizada." : null;
+            Erro = ok ? null : (erro ?? "Não foi possível atualizar.");
+            await CarregarAsync();
             return Page();
         }
     }

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PosCorte.API.Data;
 using PosCorte.API.Interfaces;
+using PosCorte.API.Models.DTOs;
 using PosCorte.Domain.Entities;
 
 namespace PosCorte.API.Services.Marceneiros
@@ -8,13 +9,111 @@ namespace PosCorte.API.Services.Marceneiros
     public class MarceneiroService : IMarceneiroService
     {
         private readonly PosCorteDbContext _db;
+        private readonly INotificacaoService _notificacao;
         private readonly ILogger<MarceneiroService> _logger;
 
-        public MarceneiroService(PosCorteDbContext db, ILogger<MarceneiroService> logger)
+        public MarceneiroService(PosCorteDbContext db, INotificacaoService notificacao, ILogger<MarceneiroService> logger)
         {
             _db = db;
+            _notificacao = notificacao;
             _logger = logger;
         }
+
+        public async Task<(Marceneiro? marceneiro, ResultadoAutoCadastro resultado)> AutoCadastrarAsync(AutoCadastroMarceneiroDTO dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Nome) || string.IsNullOrWhiteSpace(dto.Telefone) || string.IsNullOrWhiteSpace(dto.Cidade))
+                return (null, ResultadoAutoCadastro.DadosInvalidos);
+
+            var telefone = OnlyDigits(dto.Telefone);
+            var email = dto.Email?.Trim().ToLowerInvariant() ?? string.Empty;
+
+            // Deduplica por telefone (sempre) e por e-mail (quando informado).
+            var jaExiste = await _db.Marceneiros.AnyAsync(m =>
+                (telefone.Length >= 8 && m.Telefone == telefone) ||
+                (email.Length > 0 && m.Email.ToLower() == email));
+
+            if (jaExiste)
+                return (null, ResultadoAutoCadastro.Duplicado);
+
+            var marceneiro = new Marceneiro
+            {
+                Nome = dto.Nome.Trim(),
+                Telefone = telefone,
+                Email = email,
+                Cidade = dto.Cidade.Trim(),
+                Estado = string.IsNullOrWhiteSpace(dto.Estado) ? "SP" : dto.Estado.Trim().ToUpperInvariant(),
+                Bairro = dto.Bairro?.Trim() ?? string.Empty,
+                Cep = dto.Cep?.Trim() ?? string.Empty,
+                Especialidades = dto.Especialidades?.Trim() ?? string.Empty,
+                Bio = dto.Bio?.Trim() ?? string.Empty,
+                Verificado = false,
+                Disponivel = false,
+                OrigemExterna = "autocadastro",
+                DataCadastro = DateTime.UtcNow
+            };
+
+            _db.Marceneiros.Add(marceneiro);
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Auto-cadastro de montador recebido: {Id} {Nome} ({Cidade})", marceneiro.Id, marceneiro.Nome, marceneiro.Cidade);
+
+            var msg = $"Olá {PrimeiroNome(marceneiro.Nome)}! Recebemos seu cadastro na rede PósCorte. " +
+                      "Em breve homologamos seu perfil e você começa a receber montagens de móveis planejados pagas com garantia (escrow).";
+            await _notificacao.NotificarMontador(marceneiro.Telefone, msg);
+
+            return (marceneiro, ResultadoAutoCadastro.Ok);
+        }
+
+        public async Task<IEnumerable<Marceneiro>> ListarParaAdminAsync(bool? verificado)
+        {
+            var query = _db.Marceneiros.AsNoTracking().AsQueryable();
+            if (verificado.HasValue)
+                query = query.Where(m => m.Verificado == verificado.Value);
+
+            return await query
+                .OrderBy(m => m.Verificado)
+                .ThenByDescending(m => m.DataCadastro)
+                .ToListAsync();
+        }
+
+        public async Task<bool> VerificarAsync(int id)
+        {
+            var marceneiro = await _db.Marceneiros.FirstOrDefaultAsync(m => m.Id == id);
+            if (marceneiro == null) return false;
+
+            var jaEra = marceneiro.Verificado;
+            marceneiro.Verificado = true;
+            marceneiro.Disponivel = true;
+            await _db.SaveChangesAsync();
+
+            if (!jaEra)
+            {
+                _logger.LogInformation("Montador {Id} ({Nome}) homologado na rede", marceneiro.Id, marceneiro.Nome);
+                var msg = $"Parabéns {PrimeiroNome(marceneiro.Nome)}! Seu perfil foi homologado na rede PósCorte. " +
+                          "A partir de agora você pode receber montagens pagas com garantia. Fique de olho no WhatsApp.";
+                await _notificacao.NotificarMontador(marceneiro.Telefone, msg);
+                if (!string.IsNullOrWhiteSpace(marceneiro.Email))
+                    await _notificacao.EnviarEmailConfirmacao(marceneiro.Email, msg);
+            }
+
+            return true;
+        }
+
+        public async Task<(bool ok, bool disponivel)> AlternarDisponibilidadeAsync(int id)
+        {
+            var marceneiro = await _db.Marceneiros.FirstOrDefaultAsync(m => m.Id == id);
+            if (marceneiro == null) return (false, false);
+
+            marceneiro.Disponivel = !marceneiro.Disponivel;
+            await _db.SaveChangesAsync();
+            _logger.LogInformation("Disponibilidade do montador {Id} alterada para {Estado}", id, marceneiro.Disponivel);
+            return (true, marceneiro.Disponivel);
+        }
+
+        private static string OnlyDigits(string s) => new string((s ?? string.Empty).Where(char.IsDigit).ToArray());
+
+        private static string PrimeiroNome(string nome)
+            => nome.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? nome;
 
         public async Task<IEnumerable<Marceneiro>> ListarAsync(string? cidade, string? especialidade, decimal? notaMin, bool? disponivel)
         {

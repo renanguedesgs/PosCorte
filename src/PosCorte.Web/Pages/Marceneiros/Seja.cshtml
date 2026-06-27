@@ -1,0 +1,145 @@
+@page "/Marceneiros/Seja"
+@model PosCorte.Web.Pages.Marceneiros.SejaModel
+@{
+    ViewData["Title"] = "Seja um montador PósCorte";
+}
+
+<div class="pc-auth-wrap">
+    <div class="pc-auth-card" style="max-width: 620px;">
+        <div class="text-center mb-4">
+            @{
+                ViewData["BrandExtraClass"] = "justify-content-center mb-2 d-inline-flex";
+                ViewData["BrandFooter"] = false;
+                ViewData["BrandAuth"] = true;
+                ViewData["BrandLink"] = true;
+            }
+            <partial name="_Brand" />
+            <h1 class="h3 fw-bold mb-1">Receba montagens pagas com garantia</h1>
+            <p class="text-muted mb-0">
+                Cadastre-se na rede de montadores de móveis planejados. Você recebe serviços já
+                pagos (escrow), sem corre atrás de calote e sem custo para entrar.
+            </p>
+        </div>
+
+        @if (Model.Sucesso)
+        {
+            <div class="pc-card">
+                <div class="pc-card-body text-center py-5">
+                    <div class="mb-3"><i class="bi bi-check-circle-fill text-success" style="font-size:3rem;"></i></div>
+                    <h2 class="h4 fw-bold mb-2">Cadastro enviado!</h2>
+                    <p class="text-muted mb-4">
+                        Recebemos seus dados. Em breve homologamos seu perfil e você começa a receber
+                        montagens na sua região. Fique de olho no WhatsApp.
+                    </p>
+                    <a href="/" class="btn btn-pc-ghost">Voltar ao início</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="pc-card">
+                <div class="pc-card-body">
+                    @if (!string.IsNullOrEmpty(Model.Erro))
+                    {
+                        <div class="pc-alert pc-alert-danger mb-3"><i class="bi bi-exclamation-circle me-1"></i>@Model.Erro</div>
+                    }
+
+                    <div class="pc-alert pc-alert-info mb-4">
+                        <i class="bi bi-shield-check me-1"></i>
+                        <strong>Pagamento garantido:</strong> o valor da montagem fica retido com a PósCorte
+                        e é liberado para você assim que o serviço é aprovado. Nada de calote.
+                    </div>
+
+                    <form method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Nome completo</label>
+                            <input asp-for="Input.Nome" class="form-control" placeholder="Seu nome" autofocus required />
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">WhatsApp</label>
+                                <input asp-for="Input.Telefone" class="form-control" placeholder="11999998888" required />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">E-mail (opcional)</label>
+                                <input asp-for="Input.Email" class="form-control" type="email" placeholder="voce@email.com" />
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">CEP (região)</label>
+                                <input asp-for="Input.Cep" id="cepMontador" class="form-control" placeholder="01310-100" data-mask="cep" maxlength="9" />
+                                <div class="form-text" id="cepMontadorStatus"></div>
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">Cidade</label>
+                                <input asp-for="Input.Cidade" id="cidadeMontador" class="form-control" placeholder="São Paulo" required />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">UF</label>
+                                <input asp-for="Input.Estado" id="ufMontador" class="form-control" value="SP" maxlength="2" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Bairro</label>
+                            <input asp-for="Input.Bairro" id="bairroMontador" class="form-control" placeholder="Bairro onde você atua" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Especialidades</label>
+                            <input asp-for="Input.Especialidades" class="form-control" placeholder="Cozinha, Dormitório, Home Office" />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Sobre você (opcional)</label>
+                            <textarea asp-for="Input.Bio" class="form-control" rows="2" placeholder="Anos de experiência, regiões que atende..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-pc-primary w-100">
+                            Quero receber montagens <i class="bi bi-arrow-right ms-1"></i>
+                        </button>
+                        <p class="small text-muted text-center mt-3 mb-0">
+                            Ao se cadastrar, você concorda com os
+                            <a asp-page="/Legal/Termos">Termos</a> e a
+                            <a asp-page="/Legal/Privacidade">Privacidade</a>.
+                        </p>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/auth.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var cep = document.getElementById("cepMontador");
+            if (!cep) return;
+            cep.addEventListener("blur", function () { buscarCepMontador(cep.value); });
+            cep.addEventListener("input", function () {
+                var d = cep.value.replace(/\D/g, "");
+                if (d.length === 8) buscarCepMontador(cep.value);
+            });
+        });
+        function buscarCepMontador(v) {
+            var digits = (v || "").replace(/\D/g, "");
+            var status = document.getElementById("cepMontadorStatus");
+            if (digits.length !== 8) return;
+            if (status) status.textContent = "Buscando CEP...";
+            fetch("https://viacep.com.br/ws/" + digits + "/json/")
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.erro) {
+                        if (status) status.textContent = "CEP não encontrado.";
+                        return;
+                    }
+                    var cidade = document.getElementById("cidadeMontador");
+                    var uf = document.getElementById("ufMontador");
+                    var bairro = document.getElementById("bairroMontador");
+                    if (cidade && !cidade.value) cidade.value = data.localidade || "";
+                    if (uf && !uf.value) uf.value = data.uf || "";
+                    if (bairro && !bairro.value) bairro.value = data.bairro || "";
+                    if (status) status.textContent = (data.localidade || "") + " / " + (data.uf || "");
+                })
+                .catch(function () { if (status) status.textContent = ""; });
+        }
+    </script>
+}

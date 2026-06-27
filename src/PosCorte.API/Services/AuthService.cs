@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PosCorte.API.Data;
 using PosCorte.API.Interfaces;
+using PosCorte.API.Models.DTOs;
 using PosCorte.Domain.Entities;
+using PosCorte.Domain.Validation;
 
 namespace PosCorte.API.Services
 {
@@ -36,12 +38,30 @@ namespace PosCorte.API.Services
             return GerarToken(usuario);
         }
 
-        public async Task<bool> RegisterAsync(string nome, string email, string cpfCnpj, string telefone, string senha)
+        public async Task<(bool ok, string? erro)> RegisterAsync(string nome, string email, string cpfCnpj, string telefone, string senha)
         {
-            if (await _context.Usuarios.AnyAsync(u => u.Email == email))
-                return false;
+            if (string.IsNullOrWhiteSpace(nome))
+                return (false, "Informe o nome.");
 
-            var usuario = new Usuario(nome, email, cpfCnpj, telefone)
+            if (string.IsNullOrWhiteSpace(email))
+                return (false, "Informe o e-mail.");
+
+            var doc = DocumentoBrasil.SoDigitos(cpfCnpj);
+            if (!DocumentoBrasil.EhCpfOuCnpjValido(doc))
+                return (false, "CPF ou CNPJ inválido.");
+
+            if (!TelefoneBrasil.EhValido(telefone))
+                return (false, "Telefone inválido. Use DDD + número (10 ou 11 dígitos).");
+
+            var erroSenha = SenhaPolicy.ObterErro(senha);
+            if (erroSenha is not null)
+                return (false, erroSenha);
+
+            var emailNorm = email.Trim().ToLowerInvariant();
+            if (await _context.Usuarios.AnyAsync(u => u.Email == emailNorm))
+                return (false, "E-mail já cadastrado.");
+
+            var usuario = new Usuario(nome.Trim(), emailNorm, doc, DocumentoBrasil.SoDigitos(telefone))
             {
                 SenhaHash = BCrypt.Net.BCrypt.HashPassword(senha)
             };
@@ -49,31 +69,50 @@ namespace PosCorte.API.Services
             _context.Usuarios.Add(usuario);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Novo usu�rio registrado: {Email}", email);
-            return true;
+            _logger.LogInformation("Novo usuario registrado: {Email}", emailNorm);
+            return (true, null);
+        }
+
+        public async Task<UsuarioPerfilDTO?> ObterPerfilAsync(int usuarioId)
+        {
+            var usuario = await _context.Usuarios.AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == usuarioId && u.Ativo);
+            if (usuario == null) return null;
+
+            return new UsuarioPerfilDTO
+            {
+                Id = usuario.Id,
+                Nome = usuario.Nome,
+                Email = usuario.Email,
+                CpfCnpj = usuario.CpfCnpj,
+                Telefone = usuario.Telefone,
+                Role = usuario.Role,
+                DataCadastro = usuario.DataCadastro
+            };
         }
 
         public async Task<(bool ok, string? erro)> AlterarSenhaAsync(int usuarioId, string senhaAtual, string senhaNova)
         {
-            if (string.IsNullOrWhiteSpace(senhaNova) || senhaNova.Length < 6)
-                return (false, "A nova senha deve ter pelo menos 6 caracteres.");
+            var erroSenha = SenhaPolicy.ObterErro(senhaNova);
+            if (erroSenha is not null)
+                return (false, erroSenha);
 
             var usuario = await _context.Usuarios.FindAsync(usuarioId);
             if (usuario == null || !usuario.Ativo)
-                return (false, "Usu�rio n�o encontrado.");
+                return (false, "Usuário não encontrado.");
 
             if (!BCrypt.Net.BCrypt.Verify(senhaAtual, usuario.SenhaHash))
                 return (false, "Senha atual incorreta.");
 
             usuario.SenhaHash = BCrypt.Net.BCrypt.HashPassword(senhaNova);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Senha alterada para usu�rio {Id}", usuarioId);
+            _logger.LogInformation("Senha alterada para usuario {Id}", usuarioId);
             return (true, null);
         }
 
         private string GerarToken(Usuario usuario)
         {
-            var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key n�o configurada.");
+            var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key não configurada.");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var expiracao = DateTime.UtcNow.AddHours(8);

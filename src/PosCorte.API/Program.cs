@@ -29,8 +29,18 @@ builder.Services.AddScoped<IPagamentoService, PagamentoService>();
 builder.Services.AddScoped<IPagamentoConfirmacaoService, PosCorte.API.Services.Pagamentos.PagamentoConfirmacaoService>();
 builder.Services.AddScoped<IVistoriaService, VistoriaService>();
 builder.Services.AddAsaasClient(builder.Configuration);
+
+// ===== NOTIFICAÇÕES (WhatsApp + e-mail, config-gated) =====
+builder.Services.Configure<NotificacaoOptions>(builder.Configuration.GetSection(NotificacaoOptions.SectionName));
+builder.Services.AddHttpClient(NotificacaoService.HttpClientName, c => c.Timeout = TimeSpan.FromSeconds(20));
 builder.Services.AddScoped<INotificacaoService, NotificacaoService>();
 builder.Services.AddHostedService<LiquidacaoBackgroundService>();
+
+// ===== CAPTAÇÃO AUTOMÁTICA DE MONTADORES (Google Places, config-gated) =====
+builder.Services.Configure<CaptacaoOptions>(builder.Configuration.GetSection(CaptacaoOptions.SectionName));
+builder.Services.AddHttpClient(PosCorte.API.Services.Captacao.CaptacaoMarceneirosBackgroundService.HttpClientName,
+    c => c.Timeout = TimeSpan.FromSeconds(30));
+builder.Services.AddHostedService<PosCorte.API.Services.Captacao.CaptacaoMarceneirosBackgroundService>();
 
 // ===== OPERAÇÃO MANUAL (cadastro arquiteto/montador + alocação) =====
 builder.Services.AddScoped<IOperacaoManualService, OperacaoManualService>();
@@ -59,10 +69,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 
-// ===== BANCO DE DADOS - Supabase (PostgreSQL) =====
-var dbConnection = HostingConfiguration.ResolveDatabaseConnection(builder.Configuration);
-builder.Services.AddDbContext<PosCorteDbContext>(options =>
-    options.UseNpgsql(dbConnection));
+// ===== BANCO DE DADOS =====
+var useInMemoryDb = builder.Environment.IsDevelopment()
+    && builder.Configuration.GetValue<bool>("Development:UseInMemoryDatabase");
+
+if (useInMemoryDb)
+{
+    builder.Services.AddDbContext<PosCorteDbContext>(options =>
+        options.UseInMemoryDatabase("PosCorteDev"));
+}
+else
+{
+    var dbConnection = HostingConfiguration.ResolveDatabaseConnection(builder.Configuration);
+    builder.Services.AddDbContext<PosCorteDbContext>(options =>
+        options.UseNpgsql(dbConnection));
+}
 
 // Reposit�rios com EF Core
 builder.Services.AddScoped(typeof(IRepositorio<>), typeof(RepositorioEF<>));
@@ -133,8 +154,16 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var db = scope.ServiceProvider.GetRequiredService<PosCorteDbContext>();
-        logger.LogInformation("Aplicando migrations no PostgreSQL...");
-        db.Database.Migrate();
+        if (useInMemoryDb)
+        {
+            logger.LogWarning("Modo DEV: banco InMemory (sem Supabase). Dados não persistem entre reinícios.");
+            db.Database.EnsureCreated();
+        }
+        else
+        {
+            logger.LogInformation("Aplicando migrations no PostgreSQL...");
+            db.Database.Migrate();
+        }
         logger.LogInformation("Banco de dados OK.");
     }
     catch (Exception ex)

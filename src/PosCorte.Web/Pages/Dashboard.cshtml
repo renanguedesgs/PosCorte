@@ -7,13 +7,35 @@
 }
 
 <div class="container py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div class="pc-page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
         <div>
             <span class="pc-eyebrow">Central do arquiteto</span>
-            <h1 class="h3 fw-bold mb-0 mt-1">Olá, @primeiroNome 👋</h1>
+            <h1>Olá, @primeiroNome</h1>
         </div>
         <a asp-page="/Projetos/Criar" class="btn btn-pc-primary"><i class="bi bi-plus-lg me-1"></i>Novo projeto</a>
     </div>
+
+    @if (Model.Onboarding)
+    {
+        <div class="pc-onboard">
+            <h5 class="fw-bold mb-3"><i class="bi bi-rocket-takeoff me-2"></i>Comece em 3 passos</h5>
+            <div class="check-item">
+                <span class="ico"><i class="bi bi-1-circle"></i></span>
+                <span>Crie seu primeiro projeto com link do Corte Cloud</span>
+            </div>
+            <div class="check-item">
+                <span class="ico"><i class="bi bi-2-circle"></i></span>
+                <span>Pague com PIX — valor fica em escrow (seguro)</span>
+            </div>
+            <div class="check-item">
+                <span class="ico"><i class="bi bi-3-circle"></i></span>
+                <span>Montador homologado alocado em até 24h</span>
+            </div>
+            <a asp-page="/Projetos/Criar" asp-route-onboarding="true" class="btn btn-pc-accent btn-sm mt-2">
+                Começar agora <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    }
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
@@ -38,6 +60,26 @@
             <div class="pc-tile d-flex align-items-center gap-3">
                 <div class="tile-icon" style="background:var(--pc-info-soft);color:var(--pc-info)"><i class="bi bi-truck"></i></div>
                 <div><div class="tile-num">@Model.TotalOrdens</div><div class="tile-lbl">Ordens de serviço</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pc-card mb-4" id="indiqueCard" style="background:linear-gradient(135deg,var(--pc-primary-soft),#fff);">
+        <div class="pc-card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <h5 class="fw-bold mb-1"><i class="bi bi-megaphone me-2"></i>Indique e fortaleça sua rede</h5>
+                <p class="text-muted mb-0 small">
+                    Conhece outro arquiteto que sofre com montagem? Compartilhe o PósCorte —
+                    montagem com pagamento garantido, sem caçar marceneiro.
+                </p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a id="btnWhats" class="btn btn-pc-primary btn-sm" target="_blank" rel="noopener">
+                    <i class="bi bi-whatsapp me-1"></i>Compartilhar no WhatsApp
+                </a>
+                <button id="btnCopiar" type="button" class="btn btn-pc-ghost btn-sm">
+                    <i class="bi bi-link-45deg me-1"></i><span>Copiar link</span>
+                </button>
             </div>
         </div>
     </div>
@@ -86,3 +128,25 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var link = window.location.origin + "/Auth/Register";
+            var msg = "Descobri o PósCorte: montagem de móveis planejados com orçamento na hora e pagamento garantido (escrow), sem precisar caçar marceneiro. Dá uma olhada: " + link;
+            var whats = document.getElementById("btnWhats");
+            if (whats) whats.href = "https://wa.me/?text=" + encodeURIComponent(msg);
+            var btn = document.getElementById("btnCopiar");
+            if (btn) {
+                btn.addEventListener("click", function () {
+                    navigator.clipboard.writeText(link).then(function () {
+                        var span = btn.querySelector("span");
+                        var antigo = span.textContent;
+                        span.textContent = "Link copiado!";
+                        setTimeout(function () { span.textContent = antigo; }, 2000);
+                    });
+                });
+            }
+        })();
+    </script>
+}

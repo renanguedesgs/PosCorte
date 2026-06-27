@@ -2,6 +2,7 @@
 @model PosCorte.Web.Pages.IndexModel
 @{
     ViewData["Title"] = "Montagem de móveis planejados com garantia";
+    ViewData["MetaDescription"] = "Orçamento de montagem em 30 segundos, PIX em escrow e montador homologado em até 24h. Para arquitetos de planejados que usam Corte Cloud — sem caçar marceneiro no WhatsApp.";
 }
 
 @section Head {
@@ -13,20 +14,22 @@
 }
 
 <!-- ===================== HERO ===================== -->
-<section class="pc-hero">
+<section class="pc-hero pc-hero--premium">
+    <canvas class="pc-hero-mesh-canvas" aria-hidden="true"></canvas>
+    <div class="pc-hero-grid-lines" aria-hidden="true"></div>
     <div class="container py-5">
-        <div class="row align-items-center g-5 py-lg-4">
+        <div class="row align-items-center g-5 py-lg-5">
             <div class="col-lg-6">
-                <span class="badge-soft"><i class="bi bi-shield-check me-1"></i>Pagamento em ambiente seguro (Escrow)</span>
+                <div class="pc-hero-kicker"><span class="dot"></span> Marketplace de montagem · Grande SP</div>
+                <span class="badge-soft"><i class="bi bi-shield-check me-1"></i>Escrow regulado · montador homologado</span>
                 <h1 class="mt-4">O caminhão do MDF chegou. <span class="accent">Quem monta agora?</span></h1>
                 <p class="lead mt-3">
                     O PósCorte resolve o único momento que tira o sono do arquiteto: <strong>depois do corte</strong>.
-                    Preço na hora, pagamento retido em escrow e montador homologado despachado em até 24h.
-                    Sem calote, sem sumiço, sem amador.
+                    Preço na hora, PIX em escrow e montador despachado em até 24h — sem WhatsApp, sem calote.
                 </p>
-                <div class="d-flex flex-wrap gap-3 mt-4">
-                    <a asp-page="/Auth/Register" class="btn btn-pc-accent btn-lg">Subir meu projeto <i class="bi bi-arrow-right ms-1"></i></a>
-                    <a href="#como-funciona" class="btn btn-pc-ghost btn-lg" style="color:#fff;border-color:rgba(255,255,255,.25)">Ver como funciona</a>
+                <div class="d-flex flex-wrap gap-3 mt-4 pc-hero-cta-row">
+                    <a asp-page="/Auth/Register" class="btn btn-pc-accent btn-lg">Subir meu projeto</a>
+                    <a href="#como-funciona" class="btn btn-pc-ghost btn-lg pc-hero-ghost-btn">Ver como funciona</a>
                 </div>
                 <div class="pc-hero-trust mt-4">
                     <span class="item"><i class="bi bi-check-circle-fill"></i> Orçamento em 30 segundos</span>
@@ -36,37 +39,129 @@
             </div>
 
             <div class="col-lg-5 offset-lg-1">
-                <!-- ESTIMADOR INTERATIVO (lead magnet, sem login) -->
-                <div class="pc-hero-card" id="estimador">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-white-50 small fw-semibold text-uppercase">Simule seu orçamento</span>
-                        <i class="bi bi-lightning-charge-fill text-warning"></i>
+                <div class="pc-product-frame">
+                    <div class="pc-product-frame-glow"></div>
+                    <div class="pc-product-frame-chrome">
+                        <div class="pc-product-frame-dots"><span></span><span></span><span></span></div>
+                        <div class="pc-product-frame-url">app.poscorte.com/orcamento</div>
                     </div>
+                    <div class="pc-product-frame-body">
+                        <div class="pc-hero-card pc-hero-card--app" id="estimador">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="small fw-bold text-uppercase" style="letter-spacing:.08em;color:var(--pc-muted)">Simule ao vivo</span>
+                                <span class="pc-bento-pill"><i class="bi bi-lightning-charge-fill"></i> Instantâneo</span>
+                            </div>
 
-                    <label class="d-flex justify-content-between text-white small mb-1">
-                        <span>Peças cortadas</span><span class="pc-est-val fw-bold" id="estPecasVal">32</span>
-                    </label>
-                    <input type="range" class="form-range mb-3" min="1" max="120" value="32" id="estPecas">
+                            <label class="d-flex justify-content-between small mb-1 fw-semibold">
+                                <span>Peças cortadas</span><span class="pc-est-val" id="estPecasVal">32</span>
+                            </label>
+                            <input type="range" class="form-range mb-3" min="1" max="120" value="32" id="estPecas">
 
-                    <label class="d-flex justify-content-between text-white small mb-1">
-                        <span>Gavetas</span><span class="pc-est-val fw-bold" id="estGavetasVal">8</span>
-                    </label>
-                    <input type="range" class="form-range mb-3" min="0" max="40" value="8" id="estGavetas">
+                            <label class="d-flex justify-content-between small mb-1 fw-semibold">
+                                <span>Gavetas</span><span class="pc-est-val" id="estGavetasVal">8</span>
+                            </label>
+                            <input type="range" class="form-range mb-3" min="0" max="40" value="8" id="estGavetas">
 
-                    <div class="bg-white rounded-3 p-3 text-dark mb-3">
-                        <div class="d-flex justify-content-between small"><span class="text-muted">Mão de obra (montador)</span><span class="fw-semibold pc-est-val" id="estMaoObra">R$ 720,00</span></div>
-                        <div class="d-flex justify-content-between small"><span class="text-muted">Taxa PósCorte (segurança)</span><span class="fw-semibold pc-est-val" id="estTaxa">R$ 180,00</span></div>
-                        <hr class="my-2" />
-                        <div class="d-flex justify-content-between align-items-end">
-                            <span class="text-muted">Você paga</span>
-                            <span class="fw-bold fs-3 text-primary pc-est-val" id="estTotal">R$ 900,00</span>
+                            <div class="est-total-box mb-3">
+                                <div class="d-flex justify-content-between small py-1"><span class="text-muted">Mão de obra</span><span class="fw-semibold pc-est-val" id="estMaoObra">R$ 720,00</span></div>
+                                <div class="d-flex justify-content-between small py-1"><span class="text-muted">Taxa segurança (20%)</span><span class="fw-semibold pc-est-val" id="estTaxa">R$ 180,00</span></div>
+                                <hr class="my-2" />
+                                <div class="d-flex justify-content-between align-items-end">
+                                    <span class="text-muted small">Você paga</span>
+                                    <span class="total-val pc-est-val" id="estTotal">R$ 900,00</span>
+                                </div>
+                            </div>
+                            <a asp-page="/Auth/Register" class="btn btn-pc-primary w-100">Despachar esta montagem</a>
+                            <div class="text-center text-muted small mt-2">Estimativa — valor final ao subir o projeto Corte Cloud.</div>
                         </div>
                     </div>
-                    <a asp-page="/Auth/Register" class="btn btn-pc-primary w-100">Despachar esta montagem <i class="bi bi-arrow-right ms-1"></i></a>
-                    <div class="text-center text-white-50 small mt-2">Estimativa. O valor final aparece ao subir o projeto.</div>
                 </div>
             </div>
         </div>
+    </div>
+</section>
+
+<!-- ===================== LOGO WALL ===================== -->
+<section class="pc-logo-wall">
+    <div class="container pc-logo-wall-inner reveal">
+        <span class="pc-logo-wall-label">Usado por studios em</span>
+        <div class="pc-logo-wall-items">
+            <span>Pinheiros</span>
+            <span>Moema</span>
+            <span>Vila Mariana</span>
+            <span>Brooklin</span>
+            <span>Santo André</span>
+            <span>Osasco</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== BENTO (product-first) ===================== -->
+<section class="container pc-bento-section">
+    <div class="text-center mb-5 reveal">
+        <span class="pc-eyebrow">Por dentro do produto</span>
+        <h2 class="pc-section-title mt-2">Tudo que o WhatsApp não resolve — na mesma tela</h2>
+        <p class="pc-section-sub mx-auto">Interface pensada como Linear e Stripe: produto primeiro, zero enrolação.</p>
+    </div>
+    <div class="pc-bento-grid reveal">
+        <div class="pc-bento-item pc-bento-item--lg" data-spotlight>
+            <div class="pc-bento-label">Escrow · PIX</div>
+            <h3 class="pc-bento-title">Pagamento retido até você aprovar a montagem</h3>
+            <p class="text-muted small mb-0">O montador só recebe depois da sua confirmação. Disputa em 72h com valor protegido.</p>
+            <div class="pc-bento-mock">
+                <div class="pc-bento-mock-row"><span>Projeto Cozinha Apto 142</span><span class="pc-bento-pill"><i class="bi bi-shield-lock-fill"></i> Retido</span></div>
+                <div class="pc-bento-mock-row"><span class="text-muted">Valor em escrow</span><strong>R$ 3.000,00</strong></div>
+                <div class="pc-bento-mock-row"><span class="text-muted">Liberação</span><span class="text-muted">Após aprovação</span></div>
+                <div class="pc-bento-mock-bar"><span style="width:72%"></span></div>
+            </div>
+        </div>
+        <div class="pc-bento-item pc-bento-item--md" data-spotlight>
+            <div class="pc-bento-label">Alocação</div>
+            <h3 class="pc-bento-title">Montador homologado em até 24h</h3>
+            <p class="text-muted small mb-0">Rede verificada na Grande SP — você não caça ninguém.</p>
+            <div class="pc-bento-mock mt-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="pc-avatar" style="width:32px;height:32px;font-size:.75rem">C</span>
+                    <div><strong class="small">Carlos M.</strong><div class="text-muted" style="font-size:.75rem">Pinheiros · ★ 4,9</div></div>
+                    <span class="pc-bento-pill ms-auto">Alocado</span>
+                </div>
+                <div class="text-muted small"><i class="bi bi-clock me-1"></i> Confirmado em 18h após pagamento</div>
+            </div>
+        </div>
+        <div class="pc-bento-item pc-bento-item--sm" data-spotlight>
+            <div class="pc-bento-label">Corte Cloud</div>
+            <h3 class="pc-bento-title">Link do plano → orçamento</h3>
+            <p class="text-muted small">Cole o link, conte peças e gavetas.</p>
+            <div class="pc-bento-mock">
+                <div class="text-muted small mb-1">cortecloud.com/projeto/…</div>
+                <div class="pc-bento-mock-row"><span>42 peças</span><span>12 gavetas</span></div>
+            </div>
+        </div>
+        <div class="pc-bento-item pc-bento-item--sm" data-spotlight>
+            <div class="pc-bento-label">Transparência</div>
+            <h3 class="pc-bento-title">R$ 12,50/peça + R$ 40/gaveta</h3>
+            <p class="text-muted small">Markup 20% = seu seguro escrow.</p>
+            <div class="pc-bento-mock">
+                <div class="pc-bento-mock-row"><span>Mão de obra</span><strong>R$ 2.400</strong></div>
+                <div class="pc-bento-mock-row"><span>Taxa segurança</span><strong>R$ 600</strong></div>
+            </div>
+        </div>
+        <div class="pc-bento-item pc-bento-item--sm" data-spotlight>
+            <div class="pc-bento-label">Mapa</div>
+            <h3 class="pc-bento-title">Trajeto até a obra</h3>
+            <p class="text-muted small">Rota estimada quando o montador confirma.</p>
+            <div class="pc-bento-map-preview"><i class="bi bi-signpost-split me-1"></i> 12,4 km · ~28 min</div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== STATS ===================== -->
+<section class="container pc-section-sm">
+    <div class="pc-stats-row reveal">
+        <div class="item"><div class="num" data-count="24">0</div><div class="lbl">Horas para alocar montador</div></div>
+        <div class="item"><div class="num" data-count="20" data-suffix="%">0</div><div class="lbl">Taxa = seu seguro escrow</div></div>
+        <div class="item"><div class="num" data-count="30" data-suffix="s">0</div><div class="lbl">Orçamento instantâneo</div></div>
+        <div class="item"><div class="num" data-count="100" data-suffix="%">0</div><div class="lbl">Pagamento protegido</div></div>
     </div>
 </section>
 
@@ -149,6 +244,30 @@
     </div>
 </section>
 
+<!-- ===================== CORTE CLOUD ===================== -->
+<section class="container pc-section-sm" id="corte-cloud">
+    <div class="pc-corte-strip reveal">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-5">
+                <span class="pc-eyebrow">Integração natural</span>
+                <h2 class="fw-bold mt-2 mb-3">Você já usa Corte Cloud?<br/>O PósCorte é o próximo passo.</h2>
+                <p class="text-muted mb-0">
+                    Exportou o plano de corte? Cole o link, informe peças e gavetas — o orçamento de montagem
+                    aparece na mesma sessão. Sem planilha, sem ligação, sem caça no WhatsApp.
+                </p>
+            </div>
+            <div class="col-lg-7">
+                <div class="pc-corte-steps">
+                    <div class="step"><span class="n">1</span><strong>Exporta do Corte Cloud</strong><br/><span class="text-muted small">Link do projeto + contagem de peças/gavetas</span></div>
+                    <div class="step"><span class="n">2</span><strong>Sube no PósCorte</strong><br/><span class="text-muted small">Orçamento automático na tela</span></div>
+                    <div class="step"><span class="n">3</span><strong>Paga com PIX escrow</strong><br/><span class="text-muted small">Montador alocado em até 24h</span></div>
+                </div>
+                <a asp-page="/Auth/Register" class="btn btn-pc-primary mt-3"><i class="bi bi-cloud-arrow-up me-1"></i>Despachar minha primeira montagem</a>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- ===================== PREÇOS ===================== -->
 <section class="pc-section" style="background:var(--pc-surface);border-block:1px solid var(--pc-border)" id="precos">
     <div class="container">
@@ -185,6 +304,28 @@
             }
         </div>
         <p class="text-center text-muted small mt-4 reveal">Valores ilustrativos · cálculo real: R$ 12,50/peça + R$ 40/gaveta com markup inverso de 20%.</p>
+    </div>
+</section>
+
+<!-- ===================== COMPARAÇÃO ===================== -->
+<section class="container pc-section">
+    <div class="text-center mb-5 reveal">
+        <span class="pc-eyebrow">Por que não o jeito antigo?</span>
+        <h2 class="pc-section-title mt-2">PósCorte vs. caçar montador no WhatsApp</h2>
+    </div>
+    <div class="pc-compare reveal">
+        <table class="table table-borderless mb-0">
+            <thead>
+                <tr><th></th><th class="text-center">WhatsApp / indicação</th><th class="text-center text-primary">PósCorte</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Orçamento antes de pagar</td><td class="text-center lose">❌ Negociação</td><td class="text-center win">✓ Instantâneo</td></tr>
+                <tr><td>Pagamento protegido (escrow)</td><td class="text-center lose">❌ Calote comum</td><td class="text-center win">✓ PIX retido</td></tr>
+                <tr><td>Montador homologado</td><td class="text-center lose">❌ Sorte</td><td class="text-center win">✓ Rede verificada</td></tr>
+                <tr><td>Plano de corte na montagem</td><td class="text-center lose">❌ Você manda</td><td class="text-center win">✓ Automático</td></tr>
+                <tr><td>Disputa com valor retido</td><td class="text-center lose">❌ Brigas</td><td class="text-center win">✓ 72h escrow</td></tr>
+            </tbody>
+        </table>
     </div>
 </section>
 
@@ -252,14 +393,28 @@
 
 <!-- ===================== CTA FINAL ===================== -->
 <section class="container pc-section">
-    <div class="pc-cta-band text-center reveal">
-        <h2 class="fw-bold mb-2" style="position:relative;z-index:1">Pronto para nunca mais caçar montador?</h2>
-        <p class="mb-4 opacity-75" style="position:relative;z-index:1">Crie sua conta grátis e despache sua primeira montagem com segurança hoje.</p>
-        <a asp-page="/Auth/Register" class="btn btn-pc-accent btn-lg" style="position:relative;z-index:1">Criar conta grátis <i class="bi bi-arrow-right ms-1"></i></a>
+    <div class="text-center mb-4 reveal">
+        <h2 class="pc-section-title">Dois caminhos. Um ecossistema.</h2>
+        <p class="pc-section-sub mx-auto">Arquitetos despacham montagens. Montadores recebem serviços pagos. Você escolhe seu lado.</p>
+    </div>
+    <div class="pc-dual-cta reveal">
+        <div class="card">
+            <span class="pc-dual-cta-tag">Para arquitetos</span>
+            <h4 class="fw-bold mt-2">Sou arquiteto</h4>
+            <p class="text-muted small mb-3">Orçamento na hora, PIX em escrow, montador sem você cadastrar ninguém.</p>
+            <a asp-page="/Auth/Register" class="btn btn-pc-primary">Criar conta grátis</a>
+        </div>
+        <div class="card montador">
+            <span class="pc-dual-cta-tag accent">Para montadores</span>
+            <h4 class="fw-bold mt-2">Sou montador</h4>
+            <p class="text-muted small mb-3">Receba montagens de planejados na sua região, com pagamento garantido.</p>
+            <a asp-page="/Marceneiros/Seja" class="btn btn-pc-ghost">Cadastrar na rede</a>
+        </div>
     </div>
 </section>
 
 @section Scripts {
+    <script src="~/js/hero-mesh.js" asp-append-version="true"></script>
     <script>
         (function () {
             var P = 12.50, G = 40.00, MARKUP = 0.20;

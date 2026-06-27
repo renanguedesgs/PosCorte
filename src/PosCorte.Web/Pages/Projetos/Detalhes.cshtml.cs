@@ -20,6 +20,8 @@ namespace PosCorte.Web.Pages.Projetos
         public ProjetoViewModel? Projeto { get; set; }
         public OrcamentoViewModel? Orcamento { get; set; }
         public List<OrdemViewModel> Ordens { get; set; } = new();
+        public MarceneiroDetalheViewModel? MontadorAlocado { get; set; }
+        public bool MostrarTrajetoMontador { get; set; }
         public bool IsDevelopment => _env.IsDevelopment();
 
         [TempData] public string? Mensagem { get; set; }
@@ -66,6 +68,17 @@ namespace PosCorte.Web.Pages.Projetos
 
             var ordens = await _api.ListarOrdensAsync();
             Ordens = ordens.Where(o => o.ProjetoId == id).ToList();
+
+            var ordemComMontador = Ordens.FirstOrDefault(o => !string.IsNullOrEmpty(o.MontadorNome));
+            if (ordemComMontador != null)
+            {
+                var mcId = UiHelper.ParseMarceneiroIdFromOrdem(ordemComMontador.ExternalProviderId);
+                if (mcId.HasValue)
+                    MontadorAlocado = await _api.ObterMarceneiroAsync(mcId.Value);
+
+                MostrarTrajetoMontador = ordemComMontador.StatusProvedor is "Prestador_Alocado" or "Aceito" or "Concluido"
+                    && !string.IsNullOrWhiteSpace(Projeto?.CepObra);
+            }
         }
     }
 }

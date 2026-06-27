@@ -27,7 +27,6 @@ namespace PosCorte.Web.Services
                 _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
-        // ?? AUTH ????????????????????????????????????????????????
         public async Task<(bool ok, string? token, string? erro)> LoginAsync(string email, string senha)
         {
             var body = JsonSerializer.Serialize(new { email, senha });
@@ -42,6 +41,36 @@ namespace PosCorte.Web.Services
             return (true, obj.GetProperty("token").GetString(), null);
         }
 
+        public async Task<PerfilViewModel?> ObterPerfilAsync()
+        {
+            SetAuthHeader();
+            var res = await _http.GetAsync("api/v1/auth/me");
+            if (!res.IsSuccessStatusCode) return null;
+            var json = await res.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<PerfilViewModel>(json, _json);
+        }
+
+        public async Task<(bool ok, string? erro)> AlterarSenhaAsync(string senhaAtual, string senhaNova)
+        {
+            SetAuthHeader();
+            var body = JsonSerializer.Serialize(new { senhaAtual, senhaNova });
+            var res = await _http.PostAsync("api/v1/auth/alterar-senha",
+                new StringContent(body, Encoding.UTF8, "application/json"));
+            if (!res.IsSuccessStatusCode)
+            {
+                var err = await res.Content.ReadAsStringAsync();
+                try
+                {
+                    var obj = JsonSerializer.Deserialize<JsonElement>(err);
+                    if (obj.TryGetProperty("error", out var prop))
+                        return (false, prop.GetString());
+                }
+                catch { /* fallback */ }
+                return (false, "Não foi possível alterar a senha.");
+            }
+            return (true, null);
+        }
+
         public async Task<(bool ok, string? erro)> RegisterAsync(string nome, string email, string cpfCnpj, string telefone, string senha)
         {
             var body = JsonSerializer.Serialize(new { nome, email, cpfCnpj, telefone, senha });
@@ -51,7 +80,14 @@ namespace PosCorte.Web.Services
             if (!res.IsSuccessStatusCode)
             {
                 var err = await res.Content.ReadAsStringAsync();
-                return (false, "Email j� cadastrado");
+                try
+                {
+                    var obj = JsonSerializer.Deserialize<JsonElement>(err);
+                    if (obj.TryGetProperty("error", out var prop))
+                        return (false, prop.GetString());
+                }
+                catch { /* fallback */ }
+                return (false, "Não foi possível criar a conta.");
             }
             return (true, null);
         }
@@ -85,15 +121,25 @@ namespace PosCorte.Web.Services
             return JsonSerializer.Deserialize<ProjetoViewModel>(json, _json);
         }
 
-        public async Task<(bool ok, string? erro)> CriarProjetoAsync(CriarProjetoInput input)
+        public async Task<(bool ok, string? erro, int? projetoId)> CriarProjetoAsync(CriarProjetoInput input)
         {
             SetAuthHeader();
             var body = JsonSerializer.Serialize(input);
             var res = await _http.PostAsync("api/v1/projetos",
                 new StringContent(body, Encoding.UTF8, "application/json"));
             if (!res.IsSuccessStatusCode)
-                return (false, await res.Content.ReadAsStringAsync());
-            return (true, null);
+                return (false, await res.Content.ReadAsStringAsync(), null);
+
+            var json = await res.Content.ReadAsStringAsync();
+            try
+            {
+                var obj = JsonSerializer.Deserialize<JsonElement>(json, _json);
+                if (obj.TryGetProperty("id", out var idProp) && idProp.TryGetInt32(out var id))
+                    return (true, null, id);
+            }
+            catch { /* fallback */ }
+
+            return (true, null, null);
         }
 
         public async Task<OrcamentoViewModel?> CalcularOrcamentoAsync(int projetoId, int pecas, int gavetas)
@@ -188,6 +234,50 @@ namespace PosCorte.Web.Services
             if (!res.IsSuccessStatusCode) return new();
             var json = await res.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<List<MarceneiroViewModel>>(json, _json) ?? new();
+        }
+
+        // Auto-cadastro público (sem autenticação) — "Seja um montador".
+        public async Task<(bool ok, string? erro)> AutoCadastrarMarceneiroAsync(AutoCadastroMarceneiroInput input)
+        {
+            var body = JsonSerializer.Serialize(input);
+            var res = await _http.PostAsync("api/v1/marceneiros/auto-cadastro",
+                new StringContent(body, Encoding.UTF8, "application/json"));
+
+            if (res.IsSuccessStatusCode) return (true, null);
+
+            if (res.StatusCode == System.Net.HttpStatusCode.Conflict)
+                return (false, "Já existe um cadastro com esse telefone ou e-mail.");
+
+            return (false, "Não foi possível enviar seu cadastro. Confira os dados e tente novamente.");
+        }
+
+        // Admin — fila e gestão de montadores.
+        public async Task<List<MarceneiroAdminViewModel>> ListarMarceneirosAdminAsync(bool? verificado = null)
+        {
+            SetAuthHeader();
+            var query = verificado.HasValue ? $"?verificado={verificado.Value.ToString().ToLowerInvariant()}" : "";
+            var res = await _http.GetAsync($"api/v1/admin/marceneiros{query}");
+            if (!res.IsSuccessStatusCode) return new();
+            var json = await res.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<List<MarceneiroAdminViewModel>>(json, _json) ?? new();
+        }
+
+        public async Task<(bool ok, string? erro)> VerificarMarceneiroAsync(int id)
+        {
+            SetAuthHeader();
+            var res = await _http.PostAsync($"api/v1/admin/marceneiros/{id}/verificar", null);
+            if (!res.IsSuccessStatusCode)
+                return (false, await res.Content.ReadAsStringAsync());
+            return (true, null);
+        }
+
+        public async Task<(bool ok, string? erro)> AlternarDisponibilidadeMarceneiroAsync(int id)
+        {
+            SetAuthHeader();
+            var res = await _http.PostAsync($"api/v1/admin/marceneiros/{id}/disponibilidade", null);
+            if (!res.IsSuccessStatusCode)
+                return (false, await res.Content.ReadAsStringAsync());
+            return (true, null);
         }
 
         public async Task<MarceneiroDetalheViewModel?> ObterMarceneiroAsync(int id)
@@ -302,6 +392,17 @@ namespace PosCorte.Web.Services
         public string Telefone { get; set; } = string.Empty;
     }
 
+    public class PerfilViewModel
+    {
+        public int Id { get; set; }
+        public string Nome { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string CpfCnpj { get; set; } = string.Empty;
+        public string Telefone { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public DateTime DataCadastro { get; set; }
+    }
+
     public class ProjetoViewModel
     {
         public int Id { get; set; }
@@ -384,6 +485,7 @@ namespace PosCorte.Web.Services
         public string Cidade { get; set; } = string.Empty;
         public string Estado { get; set; } = string.Empty;
         public string Bairro { get; set; } = string.Empty;
+        public string Cep { get; set; } = string.Empty;
         public List<string> Especialidades { get; set; } = new();
         public string Bio { get; set; } = string.Empty;
         public decimal NotaMedia { get; set; }
@@ -396,6 +498,26 @@ namespace PosCorte.Web.Services
     public class MarceneiroDetalheViewModel : MarceneiroViewModel
     {
         public List<AvaliacaoViewModel> Avaliacoes { get; set; } = new();
+    }
+
+    public class MarceneiroAdminViewModel : MarceneiroViewModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string OrigemExterna { get; set; } = string.Empty;
+        public DateTime DataCadastro { get; set; }
+    }
+
+    public class AutoCadastroMarceneiroInput
+    {
+        public string Nome { get; set; } = string.Empty;
+        public string Telefone { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Cidade { get; set; } = string.Empty;
+        public string Estado { get; set; } = "SP";
+        public string Bairro { get; set; } = string.Empty;
+        public string Cep { get; set; } = string.Empty;
+        public string Especialidades { get; set; } = string.Empty;
+        public string Bio { get; set; } = string.Empty;
     }
 
     public class AvaliacaoViewModel

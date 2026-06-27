@@ -1,65 +1,258 @@
 @page
+
 @model PosCorte.Web.Pages.Auth.RegisterModel
+
 @{
+
+    Layout = "_AuthLayout";
+
     ViewData["Title"] = "Criar conta";
+
 }
 
-<div class="pc-auth-wrap">
-    <div class="pc-auth-card">
-        <div class="text-center mb-4">
-            @{
-                ViewData["BrandExtraClass"] = "justify-content-center mb-2 d-inline-flex";
-                ViewData["BrandFooter"] = false;
-                ViewData["BrandAuth"] = true;
-                ViewData["BrandLink"] = true;
-            }
-            <partial name="_Brand" />
-            <h1 class="h3 fw-bold mb-1">Crie sua conta grátis</h1>
-            <p class="text-muted mb-0">Comece a despachar montagens com garantia hoje</p>
-        </div>
 
-        <div class="pc-card">
-            <div class="pc-card-body">
-                @if (!string.IsNullOrEmpty(Model.Erro))
-                {
-                    <div class="pc-alert pc-alert-danger mb-3"><i class="bi bi-exclamation-circle me-1"></i>@Model.Erro</div>
-                }
 
-                <form method="post">
-                    <div class="mb-3">
-                        <label class="form-label">Nome completo / Escritório</label>
-                        <input asp-for="Nome" class="form-control" placeholder="Studio Arquitetura" autofocus />
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-7 mb-3">
-                            <label class="form-label">E-mail</label>
-                            <input asp-for="Email" class="form-control" type="email" placeholder="voce@escritorio.com" />
-                        </div>
-                        <div class="col-md-5 mb-3">
-                            <label class="form-label">Telefone</label>
-                            <input asp-for="Telefone" class="form-control" placeholder="11999999999" />
-                        </div>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-md-7 mb-3">
-                            <label class="form-label">CPF / CNPJ</label>
-                            <input asp-for="CpfCnpj" class="form-control" placeholder="Somente números" />
-                        </div>
-                        <div class="col-md-5 mb-3">
-                            <label class="form-label">Senha</label>
-                            <input asp-for="Senha" class="form-control" type="password" placeholder="Mín. 6 caracteres" />
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-pc-primary w-100">Criar conta <i class="bi bi-arrow-right ms-1"></i></button>
-                    <p class="small text-muted text-center mt-3 mb-0">
-                        Ao criar conta, você concorda com os <a asp-page="/Legal/Termos">Termos</a> e a <a asp-page="/Legal/Privacidade">Privacidade</a>.
-                    </p>
-                </form>
-            </div>
-        </div>
+<div class="pc-auth-form-header">
 
-        <p class="text-center text-muted mt-4 mb-0">
-            Já tem conta? <a asp-page="/Auth/Login" class="fw-semibold">Entrar</a>
-        </p>
-    </div>
+    <h1 class="pc-auth-form-title">Crie sua conta grátis</h1>
+
+    <p class="pc-auth-form-sub">Comece a despachar montagens com garantia — leva menos de 2 minutos.</p>
+
 </div>
+
+
+
+@if (!string.IsNullOrEmpty(Model.Erro))
+
+{
+
+    <div class="pc-alert pc-alert-danger mb-4"><i class="bi bi-exclamation-circle me-1"></i>@Model.Erro</div>
+
+}
+
+
+
+<form method="post" id="registerForm" class="pc-auth-form" novalidate>
+
+  <div class="mb-3">
+
+    <label class="form-label" for="Nome">Nome completo / Escritório</label>
+
+    <div class="pc-input-icon-wrap">
+
+      <i class="bi bi-building"></i>
+
+      <input asp-for="Nome" class="form-control pc-input-icon" id="Nome" placeholder="Studio Arquitetura" required autofocus />
+
+    </div>
+
+  </div>
+
+
+
+  <div class="mb-3">
+
+    <label class="form-label" for="Email">E-mail profissional</label>
+
+    <div class="pc-input-icon-wrap">
+
+      <i class="bi bi-envelope"></i>
+
+      <input asp-for="Email" class="form-control pc-input-icon" id="Email" type="email" placeholder="voce@escritorio.com" required />
+
+    </div>
+
+  </div>
+
+
+
+  <div class="row g-3 mb-3">
+
+    <div class="col-md-6">
+
+      <label class="form-label" for="CpfCnpj">CPF ou CNPJ</label>
+
+      <div class="pc-input-icon-wrap">
+
+        <i class="bi bi-person-vcard"></i>
+
+        <input asp-for="CpfCnpj" class="form-control pc-input-icon" id="CpfCnpj" placeholder="000.000.000-00" required
+
+               data-mask="documento" autocomplete="off" />
+
+      </div>
+
+      <div class="pc-field-feedback" id="cpfCnpjFeedback"></div>
+
+    </div>
+
+    <div class="col-md-6">
+
+      <label class="form-label" for="Telefone">WhatsApp / Telefone</label>
+
+      <div class="pc-input-icon-wrap">
+
+        <i class="bi bi-whatsapp"></i>
+
+        <input asp-for="Telefone" class="form-control pc-input-icon" id="Telefone" placeholder="(11) 99999-9999" required
+
+               data-mask="telefone" autocomplete="tel" />
+
+      </div>
+
+      <div class="pc-field-feedback" id="telefoneFeedback"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="pc-auth-section-label mb-2">
+
+    <i class="bi bi-geo-alt me-1"></i> Endereço do escritório
+
+  </div>
+
+
+
+  <div class="row g-3 mb-3">
+
+    <div class="col-md-4">
+
+      <label class="form-label" for="Cep">CEP</label>
+
+      <input asp-for="Cep" class="form-control" id="Cep" placeholder="01310-100" required
+
+             data-mask="cep" autocomplete="postal-code" maxlength="9" />
+
+      <div class="pc-field-hint" id="cepStatus"></div>
+
+    </div>
+
+    <div class="col-md-8">
+
+      <label class="form-label" for="Endereco">Endereço</label>
+
+      <input asp-for="Endereco" class="form-control" id="Endereco" placeholder="Rua, número, bairro, cidade - UF" required />
+
+    </div>
+
+  </div>
+
+
+
+  <div class="mb-3">
+
+    <label class="form-label" for="Senha">Senha</label>
+
+    <div class="pc-input-icon-wrap pc-input-password">
+
+      <i class="bi bi-lock"></i>
+
+      <input asp-for="Senha" class="form-control pc-input-icon" id="Senha" type="password"
+
+             placeholder="Crie uma senha forte" required autocomplete="new-password" minlength="8" />
+
+      <button type="button" class="pc-toggle-password" data-target="Senha" aria-label="Mostrar senha">
+
+        <i class="bi bi-eye"></i>
+
+      </button>
+
+    </div>
+
+    <div class="pc-password-strength" id="passwordStrength" hidden>
+
+      <div class="pc-password-strength-bar">
+
+        <span class="pc-password-strength-seg" data-seg="1"></span>
+
+        <span class="pc-password-strength-seg" data-seg="2"></span>
+
+        <span class="pc-password-strength-seg" data-seg="3"></span>
+
+        <span class="pc-password-strength-seg" data-seg="4"></span>
+
+      </div>
+
+      <span class="pc-password-strength-label" id="passwordStrengthLabel">Senha fraca</span>
+
+    </div>
+
+    <ul class="pc-password-rules" id="passwordRules">
+
+      <li data-rule="length"><i class="bi bi-circle"></i> Mínimo 8 caracteres</li>
+
+      <li data-rule="lower"><i class="bi bi-circle"></i> Letra minúscula</li>
+
+      <li data-rule="upper"><i class="bi bi-circle"></i> Letra maiúscula</li>
+
+      <li data-rule="digit"><i class="bi bi-circle"></i> Número</li>
+
+      <li data-rule="special"><i class="bi bi-circle"></i> Símbolo (! @@ # $ …)</li>
+
+    </ul>
+
+  </div>
+
+
+
+  <div class="mb-4">
+
+    <label class="form-label" for="SenhaConfirmacao">Confirmar senha</label>
+
+    <div class="pc-input-icon-wrap pc-input-password">
+
+      <i class="bi bi-lock-fill"></i>
+
+      <input asp-for="SenhaConfirmacao" class="form-control pc-input-icon" id="SenhaConfirmacao" type="password"
+
+             placeholder="Repita a senha" required autocomplete="new-password" />
+
+      <button type="button" class="pc-toggle-password" data-target="SenhaConfirmacao" aria-label="Mostrar senha">
+
+        <i class="bi bi-eye"></i>
+
+      </button>
+
+    </div>
+
+    <div class="pc-field-feedback" id="senhaConfirmFeedback"></div>
+
+  </div>
+
+
+
+  <button type="submit" class="btn btn-pc-primary btn-lg w-100 pc-auth-submit" id="registerSubmit" disabled>
+
+    Criar conta e continuar <i class="bi bi-arrow-right ms-1"></i>
+
+  </button>
+
+
+
+  <p class="small text-muted text-center mt-3 mb-0">
+
+    Ao criar conta, você concorda com os <a asp-page="/Legal/Termos">Termos</a> e a <a asp-page="/Legal/Privacidade">Privacidade</a>.
+
+  </p>
+
+</form>
+
+
+
+<p class="text-center text-muted mt-4 mb-0">
+
+  Já tem conta? <a asp-page="/Auth/Login" class="fw-semibold text-decoration-none">Entrar</a>
+
+</p>
+
+
+
+@section Scripts {
+
+  <script src="~/js/auth.js" asp-append-version="true"></script>
+
+}
+

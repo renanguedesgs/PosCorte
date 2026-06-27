@@ -204,6 +204,48 @@
             {
                 <div class="pc-orcamento"><p class="text-muted mt-2 mb-0">Não foi possível calcular o orçamento.</p></div>
             }
+
+            @if (Model.MontadorAlocado != null)
+            {
+                var montador = Model.MontadorAlocado;
+                <div class="pc-card mb-3">
+                    <div class="pc-card-body">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <img src="@(string.IsNullOrEmpty(montador.FotoUrl) ? "https://ui-avatars.com/api/?name="+Uri.EscapeDataString(montador.Nome) : montador.FotoUrl)"
+                                 class="rounded-circle" width="48" height="48" alt="" />
+                            <div>
+                                <div class="fw-bold">@montador.Nome
+                                    @if (montador.Verificado) { <i class="bi bi-patch-check-fill pc-verified"></i> }
+                                </div>
+                                <div class="pc-stars small">@Html.Raw(UiHelper.Estrelas(montador.NotaMedia)) @montador.NotaMedia.ToString("0.0")</div>
+                            </div>
+                        </div>
+                        @{
+                            var mapaMontador = new PosCorte.Web.Models.MarceneiroMapaViewModel
+                            {
+                                Nome = montador.Nome,
+                                Bairro = montador.Bairro,
+                                Cidade = montador.Cidade,
+                                Estado = montador.Estado,
+                                Cep = montador.Cep,
+                                MarceneiroId = montador.Id,
+                                Compact = true,
+                                ObraCep = Model.Projeto.CepObra,
+                                ObraEndereco = Model.Projeto.EnderecoCompleto,
+                                MostrarTrajeto = Model.MostrarTrajetoMontador
+                            };
+                        }
+                        <partial name="_MarceneiroRegiaoMapa" model="mapaMontador" />
+                    </div>
+                </div>
+            }
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @if (Model.MontadorAlocado != null)
+    {
+        <script src="~/js/marceneiro-mapa.js" asp-append-version="true"></script>
+    }
+}

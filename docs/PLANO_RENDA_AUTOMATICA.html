@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PósCorte — Plano de Renda Automática: como ter marceneiros sem cadastrar na mão</title>
+<style>
+  :root{
+    --azul:#0f3d5c; --azul2:#1769a3; --ciano:#16b8c4; --verde:#16a34a;
+    --laranja:#ea7317; --vermelho:#c0392b; --cinza:#475569; --cinza2:#64748b;
+    --linha:#e2e8f0; --bg:#f8fafc; --tinta:#0f172a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--tinta); line-height:1.55; font-size:14px; background:#fff;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 18px;}
+  h1,h2,h3{line-height:1.2;}
+  h2{color:var(--azul);border-bottom:3px solid var(--ciano);padding-bottom:6px;margin-top:34px;font-size:21px;}
+  h3{color:var(--azul2);font-size:16px;margin-top:22px;}
+  p{margin:9px 0;}
+  a{color:var(--azul2);}
+  code{background:#0f172a;color:#e2e8f0;padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12.5px;}
+  pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:10px;overflow:auto;font-family:Consolas,monospace;font-size:12px;line-height:1.45;}
+  pre code{background:none;padding:0;}
+  .capa{
+    background:linear-gradient(135deg,var(--azul) 0%,var(--azul2) 55%,var(--ciano) 100%);
+    color:#fff;padding:60px 50px 54px;border-radius:0 0 30px 30px;margin-bottom:8px;
+  }
+  .capa .tag{display:inline-block;background:rgba(255,255,255,.18);padding:5px 14px;border-radius:30px;font-size:12px;letter-spacing:.5px;text-transform:uppercase;}
+  .capa h1{font-size:34px;margin:18px 0 8px;}
+  .capa .sub{font-size:16px;opacity:.94;max-width:640px;}
+  .capa .meta{margin-top:26px;font-size:12.5px;opacity:.85;}
+  .lead{font-size:15px;background:var(--bg);border-left:5px solid var(--ciano);padding:14px 18px;border-radius:0 10px 10px 0;}
+  .callout{border-radius:12px;padding:14px 18px;margin:16px 0;border:1px solid var(--linha);}
+  .verdade{background:#fff7ed;border-color:#fed7aa;}
+  .ouro{background:#ecfdf5;border-color:#a7f3d0;}
+  .perigo{background:#fef2f2;border-color:#fecaca;}
+  .callout b{display:block;margin-bottom:4px;}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px;}
+  th,td{border:1px solid var(--linha);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:var(--azul);color:#fff;font-weight:600;}
+  tr:nth-child(even) td{background:var(--bg);}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;color:#fff;}
+  .p0{background:var(--vermelho);} .p1{background:var(--laranja);} .p2{background:var(--azul2);} .ok{background:var(--verde);}
+  .grid{display:flex;gap:14px;flex-wrap:wrap;margin:16px 0;}
+  .card{flex:1 1 240px;border:1px solid var(--linha);border-radius:14px;padding:16px;background:#fff;}
+  .card .n{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--ciano);color:#fff;align-items:center;justify-content:center;font-weight:800;}
+  .card h4{margin:10px 0 6px;color:var(--azul);font-size:15px;}
+  .step{display:flex;gap:14px;margin:12px 0;align-items:flex-start;}
+  .step .b{min-width:34px;height:34px;border-radius:9px;background:var(--azul2);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;}
+  .muted{color:var(--cinza2);font-size:12.5px;}
+  ul{margin:8px 0 8px 0;padding-left:22px;} li{margin:5px 0;}
+  .seal{margin-top:8px;font-size:12px;color:var(--cinza2);text-align:center;border-top:1px solid var(--linha);padding-top:14px;}
+  .flow{background:#0f172a;color:#e2e8f0;border-radius:12px;padding:18px;font-family:Consolas,monospace;font-size:12.5px;white-space:pre;overflow:auto;}
+  .kpi{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0;}
+  .kpi div{flex:1 1 150px;background:var(--bg);border:1px solid var(--linha);border-radius:12px;padding:14px;text-align:center;}
+  .kpi .v{font-size:22px;font-weight:800;color:var(--azul2);}
+  .kpi .l{font-size:11.5px;color:var(--cinza2);}
+  @media print{
+    .capa{border-radius:0;}
+    h2{page-break-after:avoid;} pre,table,.card,.callout{page-break-inside:avoid;}
+    .page-break{page-break-before:always;}
+  }
+</style>
+</head>
+<body>
+
+<div class="capa">
+  <span class="tag">PósCorte · Plano do Fundador-Dev</span>
+  <h1>Como ter marceneiros sem cadastrar na mão</h1>
+  <div class="sub">O caminho real para automatizar a captação de montadores, plugar APIs e deixar o sistema rodando: você coda, o ciclo gira, a comissão entra.</div>
+  <div class="meta">Documento técnico-estratégico · Gerado para Renan · Junho/2026 · baseado no código atual do repositório PosCorte</div>
+</div>
+
+<div class="wrap">
+
+<p class="lead">Você pediu para eu ser revolucionário e honesto ao mesmo tempo. Então começo pela verdade que vale mais que qualquer fantasia — e em seguida te entrego o plano de engenharia que chega o mais perto possível do seu sonho de <b>“só codar e a grana entrar”</b>.</p>
+
+<div class="callout verdade">
+  <b>⚠️ A verdade que te deixa rico (a fantasia te deixa pobre)</b>
+  <p><b>Não existe uma “API onde tem marceneiros” que você pluga e sai dinheiro.</b> Isso não existe para ninguém — nem Uber, nem iFood, nem GetNinjas tiveram isso. O que existe é uma <b>máquina de captação automatizada</b> que você constrói uma vez e depois roda quase sozinha. A boa notícia: <b>90% disso é código</b>, e o código é justamente a sua arma. Os 10% restantes (CNPJ + conta de pagamento) são uma tarde de burocracia que destrava todo o resto.</p>
+</div>
+
+<div class="callout ouro">
+  <b>💰 A jogada que realmente fica rica</b>
+  <p>Seu dinheiro <b>não vem de “ter marceneiros”</b>. Vem da <b>comissão (take rate) sobre cada montagem paga com escrow</b>. O marceneiro é o <i>insumo</i>; o arquiteto pagante é o <i>cliente</i>; o seu lucro é a <i>ponte automatizada entre os dois</i>. Quem automatiza essa ponte e domina o canal de distribuição (balcão de MDF) fica rico. Quem só fica esperando uma API mágica, não.</p>
+</div>
+
+<h2>1. As 3 únicas formas reais de “conectar uma API de marceneiros”</h2>
+<p>Existem exatamente três fontes de oferta de montadores — e seu código já tem o esqueleto para as três. A estratégia vencedora é usar as três em camadas, da mais barata para a mais cara.</p>
+
+<div class="grid">
+  <div class="card">
+    <span class="n">1</span>
+    <h4>Auto-cadastro (o marceneiro se cadastra sozinho)</h4>
+    <p class="muted">O melhor e mais barato. Você cria um link/landing “Seja um montador PósCorte”, o profissional preenche, cai no banco com <code>Verificado=false</code>. Zero cadastro manual seu.</p>
+  </div>
+  <div class="card">
+    <span class="n">2</span>
+    <h4>Captação automática (robô que acha e convida)</h4>
+    <p class="muted">Um job lê fontes públicas (Google Places, Instagram, marketplaces), encontra montadores por cidade e dispara convite por WhatsApp/e-mail com o link do item 1. Você não sai caçando ninguém.</p>
+  </div>
+  <div class="card">
+    <span class="n">3</span>
+    <h4>API parceira (a “API de marceneiros” de verdade)</h4>
+    <p class="muted">Helpie, Gaba, Parafuzo, GetNinjas etc. Você integra via o <code>ProvedorService</code> que já existe e despacha a ordem; eles alocam o montador. Mais caro, mas é “plugar e usar”.</p>
+  </div>
+</div>
+
+<div class="callout perigo">
+  <b>🚫 O que NÃO existe (não perca tempo procurando)</b>
+  <p>Uma API pública, grátis e nacional que liste marceneiros de planejados com disponibilidade em tempo real. Os marketplaces (GetNinjas/Parafuzo) <b>não expõem catálogo aberto</b> — eles recebem o pedido e alocam internamente. Por isso o item 1 + item 2 são a sua independência; o item 3 é o atalho pago.</p>
+</div>
+
+<h2>2. Como isso encaixa no código que você JÁ tem</h2>
+<p>Você não vai começar do zero. O repositório já está preparado para essa automação:</p>
+
+<table>
+  <tr><th>Peça existente</th><th>O que já faz</th><th>O que falta codar</th></tr>
+  <tr><td><code>Marceneiro.cs</code></td><td>Entidade com <code>Verificado</code>, <code>Disponivel</code>, <code>OrigemExterna</code></td><td>Nada — o campo <code>OrigemExterna</code> já foi feito para “evitar duplicata no seed” (auto-cadastro e robô).</td></tr>
+  <tr><td><code>ProvedorService.cs</code></td><td>Cliente Refit para API parceira (criar ordem, consultar status)</td><td>Trocar o placeholder <code>api.provider.com</code> pela URL real quando fechar parceria.</td></tr>
+  <tr><td><code>MarceneiroService.cs</code></td><td><code>AlocarParaProjetoAsync</code> escolhe o melhor montador por cidade/nota</td><td>Nada — a alocação automática já está pronta.</td></tr>
+  <tr><td><code>MarceneirosController</code></td><td>Listagem/filtros</td><td>Adicionar endpoint público <code>POST /marceneiros/auto-cadastro</code>.</td></tr>
+  <tr><td><code>NotificacaoService</code></td><td>Stub de WhatsApp/e-mail em log</td><td>Plugar provedor real (item 2 e onboarding).</td></tr>
+</table>
+
+<div class="callout ouro">
+  <b>✅ Tradução</b>
+  <p>A arquitetura para “marceneiro sem cadastro manual” <b>já foi desenhada por você</b>. Falta apenas <b>ligar os três canais de entrada</b> e <b>plugar as notificações</b>. É evolução, não reconstrução.</p>
+</div>
+
+<div class="page-break"></div>
+
+<h2>3. O motor automático (a arquitetura da máquina)</h2>
+<p>Este é o desenho do sistema que faz o ciclo girar sem você no meio:</p>
+
+<div class="flow">CAPTAÇÃO (oferta)                      DEMANDA (quem paga)
+┌─────────────────────────┐            ┌─────────────────────────┐
+│ 1. Robô acha montadores │            │ Arquiteto vê estimador  │
+│    (Google Places/IG)   │            │ na landing → cria projeto│
+│         │ convite Whats  │            │         │ paga PIX (Asaas)│
+│         ▼                │            │         ▼ escrow retém   │
+│ 2. Auto-cadastro (link) │            └────────────┬────────────┘
+│    Verificado=false      │                         │
+│         │                │                         ▼
+│         ▼                │            ┌─────────────────────────┐
+│ 3. API parceira (fallback)──────────►│ AlocarParaProjetoAsync   │
+└─────────────────────────┘            │ escolhe melhor montador  │
+                                       └────────────┬────────────┘
+                                                    ▼
+                            Montagem → vistoria → ESCROW LIBERA
+                                                    ▼
+                                  ►►► SUA COMISSÃO CAI (take rate) ◄◄◄</div>
+
+<p class="muted">Tudo que está nas caixas pode ser código. O único ponto humano saudável é a <b>verificação do montador</b> antes do primeiro serviço (selo <code>Verificado=true</code>) — e mesmo isso vira semi-automático com documento + selfie.</p>
+
+<h2>4. Roadmap de código — em sprints (o que VOCÊ desenvolve)</h2>
+
+<h3>Sprint 1 — Auto-cadastro do montador (mata 80% do cadastro manual)</h3>
+<div class="step"><div class="b">1</div><div><b>Endpoint público</b> <code>POST /api/v1/marceneiros/auto-cadastro</code> recebendo nome, telefone, cidade, especialidades. Salva com <code>Verificado=false</code>, <code>Disponivel=false</code>, <code>OrigemExterna="autocadastro"</code>.</div></div>
+<div class="step"><div class="b">2</div><div><b>Página pública</b> <code>/Marceneiros/SejaParceiro</code> (Razor) — formulário simples, mobile-first, com o mesmo capricho da landing.</div></div>
+<div class="step"><div class="b">3</div><div><b>Fila de aprovação no admin</b> — reaproveita <code>/Admin/Marceneiros</code>, com botão “Verificar”. 1 clique = montador entra na alocação automática.</div></div>
+<p class="muted">Resultado: você divulga 1 link. Os montadores se cadastram sozinhos. Você só aprova.</p>
+
+<h3>Sprint 2 — Robô de captação (você para de caçar pessoas)</h3>
+<div class="step"><div class="b">1</div><div><b>BackgroundService</b> (igual ao <code>LiquidacaoBackgroundService</code> que você já tem) que consulta a <b>Google Places API</b> por “montador de móveis planejados” + cidade.</div></div>
+<div class="step"><div class="b">2</div><div><b>Deduplicação</b> por <code>OrigemExterna="places:PLACE_ID"</code> — o campo já existe exatamente para isso.</div></div>
+<div class="step"><div class="b">3</div><div><b>Disparo de convite</b> automático (WhatsApp Cloud API ou e-mail) com o link do Sprint 1. Quem responder, se cadastra. Quem não, fica como <i>lead frio</i>.</div></div>
+<p class="muted">Resultado: a oferta cresce sozinha enquanto você dorme. Custo marginal ~zero.</p>
+
+<h3>Sprint 3 — Notificações reais (o sistema fala pelos dois lados)</h3>
+<div class="step"><div class="b">1</div><div>Trocar o stub do <code>NotificacaoService</code> por <b>WhatsApp Cloud API</b> (Meta) ou Twilio.</div></div>
+<div class="step"><div class="b">2</div><div>Gatilhos automáticos: montador alocado → avisa arquiteto + montador; vistoria pendente → cobra arquiteto; escrow liberado → avisa montador.</div></div>
+<p class="muted">Resultado: zero mensagem manual no seu WhatsApp pessoal.</p>
+
+<h3>Sprint 4 — API parceira como rede de segurança</h3>
+<div class="step"><div class="b">1</div><div>Quando <code>AlocarParaProjetoAsync</code> não achar montador próprio disponível, cai para o <code>ProvedorService</code> (Helpie/Gaba). O código já tem <code>EstaConfigurado</code> para esse fallback.</div></div>
+<div class="step"><div class="b">2</div><div>Você nunca deixa um arquiteto pagante sem montador — e isso protege sua reputação e sua receita.</div></div>
+
+<div class="page-break"></div>
+
+<h2>5. Onde a grana entra de verdade (o modelo)</h2>
+<div class="kpi">
+  <div><div class="v">20%</div><div class="l">take rate sobre cada montagem (reenquadrado como “seguro/escrow” na UI)</div></div>
+  <div><div class="v">PIX</div><div class="l">Asaas em escrow: segura o dinheiro, libera após vistoria</div></div>
+  <div><div class="v">72h</div><div class="l">liquidação automática (já existe <code>LiquidacaoBackgroundService</code>)</div></div>
+</div>
+<p>O dinheiro entra <b>sozinho a cada ciclo concluído</b> — mas só depois de existirem <b>(a)</b> CNPJ + Asaas ligados e <b>(b)</b> os dois lados do marketplace girando. Sem isso, é uma demo linda que não fatura. Esta é a parte honesta: <b>código sem credencial de pagamento = R$ 0,00</b>.</p>
+
+<h2>6. O que NÃO é código (e por isso você adia — mas não pode pular)</h2>
+<table>
+  <tr><th>Item</th><th>Por que é obrigatório</th><th>Prioridade</th></tr>
+  <tr><td>CNPJ (MEI/LTDA)</td><td>Sem ele, não abre conta Asaas no seu nome. Sem Asaas, não há PIX real nem comissão.</td><td><span class="pill p0">P0</span></td></tr>
+  <tr><td>Conta Asaas + chave</td><td>É o cano por onde o dinheiro passa e o escrow funciona.</td><td><span class="pill p0">P0</span></td></tr>
+  <tr><td>Google Places API key</td><td>Combustível do robô de captação (Sprint 2). Tem cota grátis generosa.</td><td><span class="pill p1">P1</span></td></tr>
+  <tr><td>WhatsApp Cloud API</td><td>Convite automático + notificações (Sprints 2 e 3).</td><td><span class="pill p1">P1</span></td></tr>
+  <tr><td>Deploy + domínio</td><td>Para o link público funcionar para montador e arquiteto.</td><td><span class="pill p1">P1</span></td></tr>
+  <tr><td>Verificação do montador</td><td>1 clique no admin; protege a marca. Pode virar selfie+doc depois.</td><td><span class="pill p2">P2</span></td></tr>
+</table>
+
+<div class="callout perigo">
+  <b>Não caia nessas armadilhas (custam dinheiro e tempo)</b>
+  <ul>
+    <li><b>Conta Asaas de amigo/terceiro:</b> bloqueio e dor de cabeça jurídica. Use seu CNPJ.</li>
+    <li><b>Scraping abusivo:</b> respeite termos e LGPD — convite, não spam em massa. Opt-out sempre.</li>
+    <li><b>Esperar a “API mágica”:</b> ela não vem. O auto-cadastro + robô é a sua API.</li>
+  </ul>
+</div>
+
+<h2>7. Seu plano de 30 dias (foco brutal)</h2>
+<div class="grid">
+  <div class="card"><h4>Semana 1 — Destravar dinheiro</h4><p class="muted">Abrir MEI/CNPJ, conta Asaas, ligar <code>Asaas__Enabled=true</code>. Deploy + domínio. <b>Sem isso nada fatura.</b></p></div>
+  <div class="card"><h4>Semana 2 — Auto-cadastro</h4><p class="muted">Codar Sprint 1 (endpoint + página + aprovação). Divulgar o link “Seja montador” em grupos de marcenaria.</p></div>
+  <div class="card"><h4>Semana 3 — Robô + notificação</h4><p class="muted">Codar Sprint 2 e 3. Robô busca e convida montadores; notificações reais nos dois lados.</p></div>
+  <div class="card"><h4>Semana 4 — Primeiros ciclos pagos</h4><p class="muted">3 pilotos com take rate 0% → depoimento em vídeo. Depois liga os 20%. A grana começa a entrar a cada ciclo.</p></div>
+</div>
+
+<div class="callout ouro">
+  <b>🎯 A frase para colar no monitor</b>
+  <p>“Eu não procuro marceneiros. Eu construo a máquina que os atrai, os cadastra e os aloca sozinha — e cobro pela ponte.” Esse é o pensamento que separa quem fica rico de quem fica esperando.</p>
+</div>
+
+<p class="seal">PósCorte · Plano de Renda Automática · documento vivo — atualize a cada sprint concluído.<br/>
+Próximo passo sugerido: começar pelo <b>Sprint 1 (auto-cadastro)</b>, que é o maior ganho com o menor esforço.</p>
+
+</div>
+</body>
+</html>

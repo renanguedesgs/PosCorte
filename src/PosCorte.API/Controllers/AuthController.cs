@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PosCorte.API.Interfaces;
 using PosCorte.API.Models.DTOs;
+using System.Security.Claims;
 
 namespace PosCorte.API.Controllers
 {
@@ -10,18 +12,10 @@ namespace PosCorte.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService, ILogger<AuthController> logger)
-        {
-            _authService = authService;
-            _logger = logger;
-        }
+        public AuthController(IAuthService authService) => _authService = authService;
 
-        /// <summary>Login — retorna JWT Bearer token</summary>
         [HttpPost("login")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<AuthResponseDTO>> Login([FromBody] LoginDTO dto)
         {
             var token = await _authService.LoginAsync(dto.Email, dto.Senha);
@@ -36,17 +30,36 @@ namespace PosCorte.API.Controllers
             });
         }
 
-        /// <summary>Cadastro de novo usuário</summary>
         [HttpPost("register")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register([FromBody] RegisterDTO dto)
         {
-            var ok = await _authService.RegisterAsync(dto.Nome, dto.Email, dto.CpfCnpj, dto.Telefone, dto.Senha);
+            var (ok, erro) = await _authService.RegisterAsync(dto.Nome, dto.Email, dto.CpfCnpj, dto.Telefone, dto.Senha);
             if (!ok)
-                return BadRequest(new { error = "Email já cadastrado" });
+                return BadRequest(new { error = erro ?? "Não foi possível criar a conta." });
 
             return StatusCode(201, new { message = "Usuário criado com sucesso" });
+        }
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<ActionResult<UsuarioPerfilDTO>> Me()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var perfil = await _authService.ObterPerfilAsync(userId);
+            if (perfil == null)
+                return NotFound(new { error = "Usuário não encontrado" });
+            return Ok(perfil);
+        }
+
+        [HttpPost("alterar-senha")]
+        [Authorize]
+        public async Task<IActionResult> AlterarSenha([FromBody] AlterarSenhaDTO dto)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var (ok, erro) = await _authService.AlterarSenhaAsync(userId, dto.SenhaAtual, dto.SenhaNova);
+            if (!ok)
+                return BadRequest(new { error = erro });
+            return Ok(new { message = "Senha alterada com sucesso" });
         }
     }
 }

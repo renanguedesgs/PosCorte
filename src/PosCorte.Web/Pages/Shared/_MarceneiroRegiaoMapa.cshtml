@@ -1,0 +1,78 @@
+@model PosCorte.Web.Models.MarceneiroMapaViewModel
+
+@if (string.IsNullOrWhiteSpace(Model.Cidade) && string.IsNullOrWhiteSpace(Model.Cep))
+{
+    return;
+}
+
+<div class="pc-marceneiro-map-card @(Model.Compact ? "compact" : "")">
+    <div class="pc-marceneiro-map-header">
+        <div>
+            @if (Model.MostrarTrajeto)
+            {
+                <h6 class="fw-bold mb-0"><i class="bi bi-signpost-split-fill text-primary me-1"></i>Trajeto até a obra</h6>
+                <p class="small text-muted mb-0 mt-1">
+                    Montador <strong>confirmado</strong> — rota aproximada da região de atuação até o local da montagem.
+                </p>
+            }
+            else
+            {
+                <h6 class="fw-bold mb-0"><i class="bi bi-geo-alt-fill text-primary me-1"></i>Região de atuação</h6>
+                <p class="small text-muted mb-0 mt-1">
+                    Localização <strong>aproximada</strong> — bairro/cidade, não o endereço residencial.
+                </p>
+            }
+        </div>
+        @if (Model.MarceneiroId.HasValue)
+        {
+            <a asp-page="/Marceneiros/Detalhes" asp-route-id="@Model.MarceneiroId" class="btn btn-pc-ghost btn-sm">
+                Ver perfil <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        }
+    </div>
+
+    <div class="pc-marceneiro-map-route-meta" hidden>
+        <span class="pc-map-route-distance"></span>
+        <span class="pc-map-route-duration"></span>
+    </div>
+
+    <div class="pc-marceneiro-map"
+         data-nome="@Model.Nome"
+         data-bairro="@Model.Bairro"
+         data-cidade="@Model.Cidade"
+         data-estado="@Model.Estado"
+         data-cep="@Model.Cep"
+         data-obra-cep="@Model.ObraCep"
+         data-obra-endereco="@Model.ObraEndereco"
+         data-mostrar-trajeto="@(Model.MostrarTrajeto ? "true" : "false")">
+        <div class="pc-marceneiro-map-loading">
+            <i class="bi bi-map"></i>
+            <span>Carregando mapa...</span>
+        </div>
+        <div class="pc-marceneiro-map-canvas" hidden></div>
+        <div class="pc-marceneiro-map-fallback" hidden>
+            <i class="bi bi-geo-alt"></i>
+            <span class="pc-marceneiro-map-label"></span>
+        </div>
+    </div>
+
+    <div class="pc-marceneiro-map-actions">
+        <a class="btn btn-pc-primary btn-sm pc-map-open-google" target="_blank" rel="noopener">
+            <i class="bi bi-google me-1"></i>@((Model.MostrarTrajeto) ? "Rota no Google Maps" : "Abrir no Google Maps")
+        </a>
+        <a class="btn btn-pc-ghost btn-sm pc-map-open-waze" target="_blank" rel="noopener" hidden>
+            <i class="bi bi-signpost-2 me-1"></i>Waze
+        </a>
+    </div>
+    <p class="pc-marceneiro-map-disclaimer small text-muted mb-0">
+        <i class="bi bi-shield-check me-1"></i>
+        @if (Model.MostrarTrajeto)
+        {
+            <text>Rota estimada para sua tranquilidade — origem na região do montador, destino na obra.</text>
+        }
+        else
+        {
+            <text>Área ilustrativa para avaliar distância — dados protegidos pelo montador.</text>
+        }
+    </p>
+</div>

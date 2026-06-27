@@ -78,7 +78,11 @@ Ver [`docs/ACOES_NECESSARIAS.md`](docs/ACOES_NECESSARIAS.md) e [`docs/PLAYBOOK_U
 |---------|--------|
 | Asaas PIX | Estrutura pronta, `Enabled=false` |
 | Provedor API (Helpie/Gaba) | Desligado — manual por decisão |
-| Notificações WhatsApp/e-mail | Stub em log |
+| Notificações WhatsApp/e-mail | ✅ Real (Meta/Z-API + SMTP), config-gated → log |
+| Auto-cadastro de montador | ✅ `/Marceneiros/Seja` + fila de aprovação no admin |
+| Captação automática (Google Places) | ✅ Robô config-gated (`Captacao:Enabled`) |
+
+> Como ligar a automação: [`docs/AUTOMACAO_CAPTACAO.md`](docs/AUTOMACAO_CAPTACAO.md)
 
 ---
 

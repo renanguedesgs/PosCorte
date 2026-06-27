@@ -7,6 +7,7 @@ using PosCorte.API.Configuration;
 using PosCorte.API.Data;
 using PosCorte.API.Interfaces;
 using PosCorte.API.Models.DTOs;
+using PosCorte.Domain.Entities;
 
 namespace PosCorte.API.Controllers
 {
@@ -19,6 +20,7 @@ namespace PosCorte.API.Controllers
         private readonly PosCorteDbContext _db;
         private readonly IPrecificacaoService _precificacao;
         private readonly IOperacaoManualService _operacao;
+        private readonly IMarceneiroService _marceneiros;
         private readonly IAuthService _auth;
         private readonly AsaasOptions _asaas;
 
@@ -26,12 +28,14 @@ namespace PosCorte.API.Controllers
             PosCorteDbContext db,
             IPrecificacaoService precificacao,
             IOperacaoManualService operacao,
+            IMarceneiroService marceneiros,
             IAuthService auth,
             IOptions<AsaasOptions> asaas)
         {
             _db = db;
             _precificacao = precificacao;
             _operacao = operacao;
+            _marceneiros = marceneiros;
             _auth = auth;
             _asaas = asaas.Value;
         }
@@ -125,6 +129,57 @@ namespace PosCorte.API.Controllers
 
             return Ok(new { id = marceneiro.Id, nome = marceneiro.Nome, mensagem = "Montador cadastrado na rede." });
         }
+
+        /// <summary>Lista montadores para o admin. verificado=false traz a fila de aprovação (auto-cadastros e leads).</summary>
+        [HttpGet("marceneiros")]
+        public async Task<ActionResult<IEnumerable<MarceneiroAdminDTO>>> ListarMarceneiros([FromQuery] bool? verificado)
+        {
+            var lista = await _marceneiros.ListarParaAdminAsync(verificado);
+            return Ok(lista.Select(MapMarceneiroAdmin));
+        }
+
+        /// <summary>Homologa (verifica) um montador: passa a entrar na alocação automática.</summary>
+        [HttpPost("marceneiros/{id:int}/verificar")]
+        public async Task<IActionResult> VerificarMarceneiro(int id)
+        {
+            var ok = await _marceneiros.VerificarAsync(id);
+            return ok
+                ? Ok(new { mensagem = "Montador homologado na rede." })
+                : NotFound(new { erro = "Montador não encontrado." });
+        }
+
+        /// <summary>Alterna a disponibilidade do montador (Disponível / Ocupado).</summary>
+        [HttpPost("marceneiros/{id:int}/disponibilidade")]
+        public async Task<IActionResult> AlternarDisponibilidade(int id)
+        {
+            var (ok, disponivel) = await _marceneiros.AlternarDisponibilidadeAsync(id);
+            return ok
+                ? Ok(new { disponivel, mensagem = disponivel ? "Montador disponível." : "Montador marcado como ocupado." })
+                : NotFound(new { erro = "Montador não encontrado." });
+        }
+
+        private static MarceneiroAdminDTO MapMarceneiroAdmin(Marceneiro m) => new()
+        {
+            Id = m.Id,
+            Nome = m.Nome,
+            Email = m.Email,
+            Telefone = m.Telefone,
+            FotoUrl = m.FotoUrl,
+            Cidade = m.Cidade,
+            Estado = m.Estado,
+            Bairro = m.Bairro,
+            Especialidades = string.IsNullOrWhiteSpace(m.Especialidades)
+                ? new List<string>()
+                : m.Especialidades.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList(),
+            Bio = m.Bio,
+            NotaMedia = m.NotaMedia,
+            TotalAvaliacoes = m.TotalAvaliacoes,
+            TotalServicos = m.TotalServicos,
+            Disponivel = m.Disponivel,
+            Verificado = m.Verificado,
+            OrigemExterna = m.OrigemExterna,
+            DataCadastro = m.DataCadastro
+        };
 
         [HttpGet("projetos/{id:int}/operacao")]
         public async Task<ActionResult<ProjetoOperacaoAdminDTO>> ObterProjetoOperacao(int id)
